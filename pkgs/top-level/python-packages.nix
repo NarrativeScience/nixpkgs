@@ -9342,12 +9342,26 @@ let
       html5lib
       modules.sqlite3
       beautifulsoup4
-    ];
+    ] ++ stdenv.lib.optional stdenv.isDarwin [
+        pkgs.darwin.adv_cmds # provides the locale command which is
+                             # needed for pandas unit tests to pass
+      ];
+
+    # For OSX, we need to add the OSX c++ sdk to the common include
+    # path, so that it can find complex.h.
+    patchPhase = stdenv.lib.optionalString stdenv.isDarwin ''
+      osx_sdk="${pkgs.darwin.osx_sdk}/Developer/SDKs/MacOSX10.9.sdk";
+      # Grab the version of C++ in the SDK directory
+      cpp_ver=$(ls $osx_sdk/usr/include/c++ | head -n 1)
+      # Create the path
+      cpp_sdk="$osx_sdk/usr/include/c++/$cpp_ver"
+      echo "Adding $cpp_sdk to the setup.py common_include variable"
+      substituteInPlace setup.py \
+        --replace "['pandas/src/klib', 'pandas/src']" \
+                  "['pandas/src/klib', 'pandas/src', '$cpp_sdk']"
+    '';
 
     preCheck = ''
-      # Broken test, probably https://github.com/pydata/pandas/issues/10312:
-      rm pandas/io/tests/test_html.py
-
       # Hitting https://github.com/pydata/pandas/pull/7362 on python
       # 3.3 and 3.4, not sure why:
       rm pandas/tseries/tests/test_daterange.py

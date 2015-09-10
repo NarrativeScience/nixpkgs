@@ -9328,6 +9328,8 @@ let
       sha256 = "10agmrkps8bi5948vwpipfxds5kj1d076m9i0nhaxwqiw7gm6670";
     };
 
+    HEY_STDENV = "${pkgs.darwin.osx_sdk}";
+
     buildInputs = [ self.nose ];
     propagatedBuildInputs = with self; [
       dateutil
@@ -9342,7 +9344,25 @@ let
       html5lib
       modules.sqlite3
       beautifulsoup4
-    ];
+    ] ++ stdenv.lib.optional stdenv.isDarwin [
+        pkgs.darwin.adv_cmds # provides the locale command which is
+                             # needed for pandas unit tests to pass
+      ];
+
+    # For OSX, we need to add the OSX c++ sdk to the common include
+    # path, so that it can find complex.h.
+    patchPhase = stdenv.lib.optionalString stdenv.isDarwin (let
+        osx_sdk = "${pkgs.darwin.osx_sdk}/Developer/SDKs/MacOSX10.9.sdk";
+      in ''
+      # Grab the version of C++ in the SDK directory
+      cpp_ver=$(ls ${osx_sdk}/usr/include/c++ | head -n 1)
+      # Create the path
+      cpp_sdk="${osx_sdk}/usr/include/c++/$cpp_ver"
+      echo "Adding $cpp_sdk to the setup.py common_include variable"
+      substituteInPlace setup.py \
+        --replace "['pandas/src/klib', 'pandas/src']" \
+                  "['pandas/src/klib', 'pandas/src', '$cpp_sdk']"
+    '');
 
     preCheck = ''
       # Broken test, probably https://github.com/pydata/pandas/issues/10312:

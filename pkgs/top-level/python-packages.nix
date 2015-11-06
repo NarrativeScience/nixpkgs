@@ -126,6 +126,11 @@ let
     mpi = pkgs.openmpi;
   };
 
+  ansible = callPackage ../development/python-modules/ansible {
+    asLibrary = true;
+    pythonPackages = self;
+  };
+
   nixpart = callPackage ../tools/filesystems/nixpart { };
 
   # This is used for NixOps to make sure we won't break it with the next major

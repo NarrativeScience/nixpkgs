@@ -5272,7 +5272,10 @@ let
 
   augeas = callPackage ../tools/system/augeas { };
 
-  ansible = callPackage ../tools/system/ansible { };
+  ansible = callPackage ../development/python-modules/ansible {
+    asLibrary = false;
+    pythonPackages = python27Packages;
+  };
 
   antlr = callPackage ../development/tools/parsing/antlr/2.7.7.nix { };
 

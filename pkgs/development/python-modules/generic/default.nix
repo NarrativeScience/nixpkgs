@@ -60,7 +60,7 @@ then throw "${name} not supported for interpreter ${python.executable}"
 else
 
 python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
-  inherit doCheck;
+  inherit doCheck pythonPath;
 
   name = namePrefix + name;
 
@@ -71,16 +71,15 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
     ++ (lib.optional (lib.hasSuffix "zip" attrs.src.name or "") unzip);
 
   # propagate python/setuptools to active setup-hook in nix-shell
-  propagatedBuildInputs = propagatedBuildInputs ++ [ recursivePthLoader python setuptools ];
-
-  pythonPath = pythonPath;
+  propagatedBuildInputs = propagatedBuildInputs ++
+                            [ recursivePthLoader python setuptools ];
 
   configurePhase = attrs.configurePhase or ''
     runHook preConfigure
 
-    # patch python interpreter to write null timestamps when compiling python files
-    # with following var we tell python to activate the patch so that python doesn't
-    # try to update them when we freeze timestamps in nix store
+    # patch python interpreter to write null timestamps when compiling python
+    # files with following var we tell python to activate the patch so that
+    # python doesn't try to update them when we freeze timestamps in nix store.
     export DETERMINISTIC_BUILD=1
 
     # prepend following line to import setuptools before distutils
@@ -103,7 +102,8 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
   buildPhase = attrs.buildPhase or ''
     runHook preBuild
 
-    ${python}/bin/${python.executable} setup.py build ${lib.concatStringsSep " " setupPyBuildFlags}
+    ${python}/bin/${python.executable} setup.py build ${lib.concatStringsSep
+                                                        " " setupPyBuildFlags}
 
     runHook postBuild
   '';
@@ -161,14 +161,28 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
     '';
 
   shellHook = attrs.shellHook or ''
+    # Convenience function; prints the python paths each on its own line.
+    showPythonPath () {
+      echo $PYTHONPATH | tr : '\n'
+    }
+    # Check that we are in a folder with a setup.py
     if test -e setup.py; then
-       tmp_path=/tmp/`pwd | md5sum | cut -f 1 -d " "`-$name
-       mkdir -p $tmp_path/lib/${python.libPrefix}/site-packages
-       ${preShellHook}
-       export PATH="$tmp_path/bin:$PATH"
-       export PYTHONPATH="$tmp_path/lib/${python.libPrefix}/site-packages:$PYTHONPATH"
-       ${python}/bin/${python.executable} setup.py develop --prefix $tmp_path
-       ${postShellHook}
+       lowercase() {
+         echo $@ | awk '{print tolower($0)}'
+       }
+       package_name=$(${python.executable} setup.py --name)
+       # Check that the package name contains the output of setup.py.
+       if grep -q $(lowercase $package_name) <(lowercase '${name}'); then
+         tmp_path=$TMPDIR/$(pwd | md5sum | cut -f 1 -d " ")-$name
+         mkdir -p $tmp_path/lib/${python.libPrefix}/site-packages
+         ${preShellHook}
+         export PATH="$tmp_path/bin:$PATH"
+         export PYTHONPATH="$tmp_path/lib/${python.libPrefix}/site-packages:$PYTHONPATH"
+         ${python}/bin/${python.executable} setup.py develop \
+           --prefix $tmp_path \
+           --allow-hosts=None # Disallow remote fetching of dependencies.
+         ${postShellHook}
+       fi
     fi
   '';
 

@@ -41,6 +41,9 @@
 # generated binaries.
 , makeWrapperArgs ? []
 
+# Skip the conflict checker thingy
+, dontCatchConflicts ? false
+
 , ... } @ attrs:
 
 
@@ -114,7 +117,7 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled" "doCheck"] //
 
     # check if we have two packagegs with the same name in closure and fail
     # this shouldn't happen, something went wrong with dependencies specs
-    ${python.interpreter} ${./catch_conflicts.py}
+    ${if dontCatchConflicts == false then "${python.interpreter} ${./catch_conflicts.py}" else ""}
   '';
 
   shellHook = attrs.shellHook or ''

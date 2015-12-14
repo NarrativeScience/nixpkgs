@@ -3682,7 +3682,7 @@ in modules // {
 
       mkdir -p $out/bin
       mkdir -p $out/lib/${python.libPrefix}/site-packages
-      cp -r server/* $out/lib/${python.libPrefix}/site-packages
+      cp -r server/* $out/lib/${python.libPrefix}/site-packages   # */
       mv $out/lib/${python.libPrefix}/site-packages/deskcon-server $out/bin/deskcon-server
 
       wrapPythonProgramsIn $out/bin "$out $pythonPath"
@@ -10824,18 +10824,14 @@ in modules // {
   };
 
   numpy = let
-    support = import ../development/python-modules/numpy-scipy-support.nix {
-      inherit python;
-      openblas = pkgs.openblasCompat;
-      pkgName = "numpy";
-    };
+    openblas = pkgs.openblasCompat;
   in buildPythonPackage ( rec {
     name = "numpy-${version}";
-    version = "1.10.1";
+    version = "1.9.2";
 
     src = pkgs.fetchurl {
       url = "mirror://sourceforge/numpy/${name}.tar.gz";
-      sha256 = "8b9f453f29ce96a14e625100d3dcf8926301d36c5f622623bf8820e748510858";
+      sha256 = "0apgmsk9jlaphb2dp1zaxqzdxkf69h1y3iw2d1pcnkj31cmmypij";
     };
 
     disabled = isPyPy;  # WIP
@@ -10844,10 +10840,8 @@ in modules // {
       sed -i 's/-faltivec//' numpy/distutils/system_info.py
     '';
 
-    inherit (support) preBuild checkPhase;
-
     buildInputs = [ pkgs.gfortran self.nose ];
-    propagatedBuildInputs = [ support.openblas ];
+    propagatedBuildInputs = [ openblas ];
 
     # This patch removes the test of large file support, which takes forever
     # and can cause the machine to run out of disk space when run.
@@ -10855,10 +10849,34 @@ in modules // {
       patch -p0 < ${../development/python-modules/numpy-no-large-files.patch}
     '';
 
+    # Creates a site.cfg telling the setup script where to find depended-on
+    # math libraries.
+    preBuild = ''
+      echo "Creating site.cfg file..."
+      cat << EOF > site.cfg
+      [openblas]
+      include_dirs = ${openblas}/include
+      library_dirs = ${openblas}/lib
+      EOF
+    '';
+
+    # To run the tests, import numpy and run its `.test()` function.
+    checkPhase = ''
+      runHook preCheck
+      pushd dist
+      ${python.interpreter} -c 'import numpy; numpy.test("fast", verbose=10)'
+      popd
+      runHook postCheck
+    '';
+
     meta = {
       description = "Scientific tools for Python";
       homepage = "http://numpy.scipy.org/";
     };
+
+    # Expose the openblas library to downstream modules.
+    passthru.openblas = openblas;
+    passthru.version = version;
   });
 
   numpydoc = buildPythonPackage rec {
@@ -16465,13 +16483,7 @@ in modules // {
   };
 
 
-  scipy = let
-    support = import ../development/python-modules/numpy-scipy-support.nix {
-      inherit python;
-      openblas = pkgs.openblasCompat;
-      pkgName = "numpy";
-    };
-  in buildPythonPackage rec {
+  scipy = buildPythonPackage rec {
     name = "scipy-${version}";
     version = "0.16.1";
 
@@ -16487,7 +16499,25 @@ in modules // {
       sed -i '0,/from numpy.distutils.core/s//import setuptools;from numpy.distutils.core/' setup.py
     '';
 
-    inherit (support) preBuild checkPhase;
+    # Creates a site.cfg telling the setup script where to find depended-on
+    # math libraries.
+    preBuild = ''
+      echo "Creating site.cfg file..."
+      cat << EOF > site.cfg
+      [openblas]
+      include_dirs = ${self.numpy.openblas}/include
+      library_dirs = ${self.numpy.openblas}/lib
+      EOF
+    '';
+
+    # To run the tests, import scipy and run its `.test()` function.
+    checkPhase = ''
+      runHook preCheck
+      pushd dist
+      ${python.interpreter} -c 'import scipy; scipy.test("fast", verbose=10)'
+      popd
+      runHook postCheck
+    '';
 
     setupPyBuildFlags = [ "--fcompiler='gnu95'" ];
 

@@ -15,9 +15,7 @@ let
 
   callPackage = pkgs.newScope self;
 
-  buildPythonPackage = makeOverridable (callPackage ../development/python-modules/generic {
-    bootstrapped-pip = callPackage ../development/python-modules/bootstrapped-pip { };
-  });
+  buildPythonPackage = makeOverridable (callPackage ../development/python-modules/generic { });
 
   # Unique python version identifier
   pythonName =
@@ -39,6 +37,8 @@ let
 in modules // {
 
   inherit python isPy26 isPy27 isPy33 isPy34 isPy35 isPyPy isPy3k pythonName buildPythonPackage;
+
+  bootstrapped-pip = callPackage ../development/python-modules/bootstrapped-pip { };
 
   # helpers
 

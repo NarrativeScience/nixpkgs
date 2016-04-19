@@ -16,13 +16,17 @@ stdenv.mkDerivation rec {
   };
 
   unpackPhase = "tar xvjf $src; cd lsof_*; tar xvf lsof_*.tar; sourceRoot=$( echo lsof_*/); ";
-  
+
   preBuild = "sed -i Makefile -e 's/^CFGF=/&	-DHASIPv6=1/;';";
-  
+
+  # This environment variable is read by the LSOF build script and looks
+  # around for system files to include. Setting this restores some determinism.
+  LSOF_INCLUDE = "/no/such/path";
+
   configurePhase = if stdenv.isDarwin
     then "./Configure -n darwin;"
     else "./Configure -n linux;";
-  
+
   installPhase = ''
     mkdir -p $out/bin $out/man/man8
     cp lsof.8 $out/man/man8/

@@ -1,5 +1,14 @@
-{ stdenv, fetchFromGitHub,
-  bzip2, nix, perl, perlPackages,
+# { stdenv, fetchFromGitHub,
+  # bzip2, nix, perl, perlPackages,
+{
+  bzip2,
+  fetchFromGitHub,
+  lib,
+  makeWrapper,
+  nix,
+  perl,
+  perlPackages,
+  stdenv,
 }:
 
 with stdenv.lib;
@@ -18,10 +27,23 @@ stdenv.mkDerivation rec {
     inherit rev sha256;
   };
 
-  buildInputs = [ bzip2 perl nix ]
-    ++ (with perlPackages; [ DBI DBDSQLite Plack Starman ]);
+  # buildInputs = [ bzip2 perl nix ]
+  #   ++ (with perlPackages; [ DBI DBDSQLite Plack Starman ]);
 
-  dontBuild = true;
+#   dontBuild = true;
+
+  buildInputs = [ makeWrapper ];
+
+  propagatedBuildInputs = [
+    nix
+    perl
+    perlPackages.DBDSQLite
+    perlPackages.DBI
+    perlPackages.Plack
+    perlPackages.Starman
+  ];
+
+  phases = ["unpackPhase" "installPhase"];
 
   installPhase = ''
     mkdir -p $out/libexec/nix-serve
@@ -30,10 +52,19 @@ stdenv.mkDerivation rec {
     mkdir -p $out/bin
     cat > $out/bin/nix-serve <<EOF
     #! ${stdenv.shell}
-    PATH=${makeBinPath [ bzip2 nix ]}:\$PATH PERL5LIB=$PERL5LIB exec ${perlPackages.Starman}/bin/starman $out/libexec/nix-serve/nix-serve.psgi "\$@"
+  #   PATH=${makeBinPath [ bzip2 nix ]}:\$PATH PERL5LIB=$PERL5LIB exec ${perlPackages.Starman}/bin/starman $out/libexec/nix-serve/nix-serve.psgi "\$@"
+  #   EOF
+  #   chmod +x $out/bin/nix-serve
+  # '';
+
+    exec ${perlPackages.Starman}/bin/starman $out/libexec/nix-serve/nix-serve.psgi "\$@"
     EOF
     chmod +x $out/bin/nix-serve
-  '';
+
+    wrapProgram $out/bin/nix-serve \
+      --prefix PATH : "${nix.out}/bin:${bzip2.out}/bin" \
+      --prefix PERL5LIB : $PERL5LIB
+    '';
 
   meta = {
     homepage = https://github.com/edolstra/nix-serve;

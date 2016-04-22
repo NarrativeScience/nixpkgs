@@ -41,7 +41,7 @@ common = rec { # attributes common to both builds
     "-DDEFAULT_CHARSET=utf8"
     "-DDEFAULT_COLLATION=utf8_general_ci"
     "-DSECURITY_HARDENED=ON"
-
+    "-DENABLED_LOCAL_INFILE=OFF"
     "-DMYSQL_UNIX_ADDR=/run/mysqld/mysqld.sock"
     "-DINSTALL_MYSQLSHAREDIR=share/mysql"
 

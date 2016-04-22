@@ -1,4 +1,5 @@
-{ lib, stdenv, fetchurl, fetchpatch, pkgconfig, libtool
+# { lib, stdenv, fetchurl, fetchpatch, pkgconfig, libtool
+{ lib, stdenv, fetchurl, pkgconfig, libtool, silver-searcher
 , bzip2, zlib, libX11, libXext, libXt, fontconfig, freetype, ghostscript, libjpeg
 , lcms2, openexr, libpng, librsvg, libtiff, libxml2, openjpeg, libwebp
 }:
@@ -31,7 +32,8 @@ in
 
 stdenv.mkDerivation rec {
   name = "imagemagick-${version}";
-  inherit (cfg) version;
+#   inherit (cfg) version;
+  version = "6.7.9-10";
 
   src = fetchurl {
     urls = [
@@ -39,7 +41,8 @@ stdenv.mkDerivation rec {
       # the original source above removes tarballs quickly
       "http://distfiles.macports.org/ImageMagick/ImageMagick-${version}.tar.xz"
     ];
-    inherit (cfg) sha256;
+#     inherit (cfg) sha256;
+    sha256 = "147p96zx1jylc90d5zbpd1lr4xk6d6zw8cligznv36dr91kxx5rn";
   };
 
   patches = [ ./imagetragick.patch ] ++ cfg.patches;
@@ -64,12 +67,15 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ pkgconfig libtool ];
 
   buildInputs =
-    [ zlib fontconfig freetype ghostscript
-      libpng libtiff libxml2
-    ]
-    ++ lib.optionals (stdenv.cross.libc or null != "msvcrt")
-      [ openexr librsvg openjpeg ]
-    ;
+#     [ zlib fontconfig freetype ghostscript
+#       libpng libtiff libxml2
+#     ]
+#     ++ lib.optionals (stdenv.cross.libc or null != "msvcrt")
+#       [ openexr librsvg openjpeg ]
+#     ;
+    [ pkgconfig libtool zlib fontconfig freetype ghostscript libjpeg
+      openexr libpng librsvg libtiff libxml2 silver-searcher
+    ];
 
   propagatedBuildInputs =
     [ bzip2 freetype libjpeg lcms2 ]
@@ -81,12 +87,12 @@ stdenv.mkDerivation rec {
     (cd "$dev/include" && ln -s ImageMagick* ImageMagick)
     moveToOutput "bin/*-config" "$dev"
     moveToOutput "lib/ImageMagick-*/config-Q16" "$dev" # includes configure params
-    for file in "$dev"/bin/*-config; do
+    for file in "$dev"/bin/*-config; do                                     #*/
       substituteInPlace "$file" --replace pkg-config \
         "PKG_CONFIG_PATH='$dev/lib/pkgconfig' '${pkgconfig}/bin/pkg-config'"
     done
   '' + lib.optionalString (ghostscript != null) ''
-    for la in $out/lib/*.la; do
+    for la in $out/lib/*.la; do                                            #*/
       sed 's|-lgs|-L${lib.getLib ghostscript}/lib -lgs|' -i $la
     done
   '';

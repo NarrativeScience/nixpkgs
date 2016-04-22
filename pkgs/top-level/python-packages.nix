@@ -3038,6 +3038,7 @@ in {
       [ self.dateutil
         self.requests2
         self.jmespath
+        self.docutils
       ];
 
     buildInputs = with self; [ docutils mock nose ];
@@ -4734,6 +4735,8 @@ in {
     patchPhase = ''
       substituteInPlace testing/cffi0/test_ownlib.py --replace "gcc" "cc"
     '';
+
+    # doCheck = !stdenv.isDarwin;
 
     checkPhase = ''
       py.test
@@ -11647,7 +11650,7 @@ in {
       downloadPage = https://github.com/PythonCharmers/python-future/releases;
       license = licenses.mit;
       maintainers = with maintainers; [ prikhi ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   };
 
@@ -11774,6 +11777,8 @@ in {
 
   gevent = buildPythonPackage rec {
     name = "gevent-1.1.2";
+    # name = "gevent-1.0.2";
+    # disabled = isPyPy;  # see https://github.com/surfly/gevent/issues/248
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/gevent/${name}.tar.gz";
@@ -12068,8 +12073,7 @@ in {
 
   google_apputils = buildPythonPackage rec {
     name = "google-apputils-0.4.1";
-    disabled = isPy3k;
-
+    dontStrip = true;
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/google-apputils/${name}.tar.gz";
       sha256 = "1sxsm5q9vr44qzynj8l7p3l7ffb0zl1jdqhmmzmalkx941nbnj1b";
@@ -12446,7 +12450,6 @@ in {
     # No proper test suite
     doCheck = false;
   };
-
 
   xdis = buildPythonPackage rec {
     name = "xdis-${version}";
@@ -15829,7 +15832,15 @@ in {
     blas = pkgs.openblasCompat;
   };
 
-  numpy = self.numpy_1_11;
+  numpy = self.numpy_1_10;
+
+  numpy_1_9 = self.buildNumpyPackage rec {
+    version = "1.9.2";
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/source/n/numpy/numpy-${version}.tar.gz";
+      sha256 = "0apgmsk9jlaphb2dp1zaxqzdxkf69h1y3iw2d1pcnkj31cmmypij";
+    };
+  };
 
   numpy_1_10 = self.buildNumpyPackage rec {
     version = "1.10.4";
@@ -16232,8 +16243,7 @@ in {
   # });
 
   ordereddict = buildPythonPackage rec {
-    name = "ordereddict-${version}";
-    version = "1.1";
+    name = "ordereddict-1.1";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/o/ordereddict/${name}.tar.gz";
@@ -18946,31 +18956,37 @@ in {
   protobuf3_0_0b2 = (self.protobufBuild pkgs.protobuf3_0_0b2).override { doCheck = false; };
   protobuf2_6 = self.protobufBuild pkgs.protobuf2_6;
   protobuf2_5 = self.protobufBuild pkgs.protobuf2_5;
+  protobuf3_0 = self.protobufBuild pkgs.protobuf3_0;
   protobufBuild = protobuf: buildPythonPackage rec {
     inherit (protobuf) name src;
-    disabled = isPy3k || isPyPy;
+    atLeast3 = versionAtLeast protobuf.version "3.0.0";
+    atLeast2 = versionAtLeast protobuf.version "2.6.0";
+    disabled = (!atLeast3 && isPy3k) || isPyPy;
 
+    buildInputs = optional atLeast3 self.nose;
     propagatedBuildInputs = with self; [ protobuf google_apputils ];
 
-    prePatch = ''
+    prePatch = if atLeast3 then "cd python" else ''
       while [ ! -d python ]; do
         cd *
       done
       cd python
     '';
 
-    preConfigure = optionalString (versionAtLeast protobuf.version "2.6.0") ''
+    preConfigure = optionalString (atLeast2 && !atLeast3) ''
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
     '';
 
-    checkPhase = if versionAtLeast protobuf.version "2.6.0" then ''
+    checkPhase = if atLeast3 then ''
+      nosetests google/protobuf/internal
+    '' else if atLeast2 then ''
       ${python.executable} setup.py google_test --cpp_implementation
     '' else ''
       ${python.executable} setup.py test
     '';
 
-    installFlags = optional (versionAtLeast protobuf.version "2.6.0") "--install-option='--cpp_implementation'";
+    installFlags = optional atLeast2 "--install-option='--cpp_implementation'";
 
     doCheck = true;
 
@@ -18997,6 +19013,14 @@ in {
     doCheck = false;
 
     buildInputs = with self; [ mock ] ++ optionals stdenv.isDarwin [ pkgs.darwin.IOKit ];
+
+#    checkPhase = ''
+#      ${python.interpreter} test/test_psutil.py
+#    '';
+
+    # Test suite needs `free`, therefore we have pkgs.busybox
+#    buildInputs = [self.mock] ++
+#      (if stdenv.isDarwin then [pkgs.darwin.IOKit] else [pkgs.busybox]);
 
     meta = {
       description = "Process and system utilization information interface for python";
@@ -20042,10 +20066,16 @@ in {
         sha256 = "2fe3cc2fc66a56fdc35dbbc2bf1dd96a534abfc79ee6b2ad9ae4fe166e570c4b";
     };
 
+    buildInputs = [self.nose];
     propagatedBuildInputs = with self; [ astroid ];
 
+    doCheck = false;
+
     checkPhase = ''
-        cd pylint/test; ${python.interpreter} -m unittest discover -p "*test*"
+      (
+        cd pylint/test
+        ${python.interpreter} -m unittest discover -p "*test*"
+      )
     '';
 
     postInstall = ''
@@ -24253,6 +24283,7 @@ in {
 
   sqlalchemy_1_0 = buildPythonPackage rec {
     name = "SQLAlchemy-${version}";
+
     version = "1.0.15";
 
     src = pkgs.fetchurl {
@@ -25359,7 +25390,7 @@ in {
       description = "Twitter library for python";
       license = licenses.mit;
       maintainers = with maintainers; [ garbas ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   });
 

@@ -27,9 +27,9 @@ self =  stdenv.mkDerivation {
         --replace '$(mkinstalldirs) $(DESTDIR)$(localstatedir)/run/dbus' ':'
     '' + /* cleanup of runtime references */ ''
       substituteInPlace ./dbus/dbus-sysdeps-unix.c \
-        --replace 'DBUS_BINDIR "/dbus-launch"' "\"$lib/bin/dbus-launch\""
+        --replace 'DBUS_BINDIR "/dbus-launch"' "\"$out/bin/dbus-launch\""
       substituteInPlace ./tools/dbus-launch.c \
-        --replace 'DBUS_DAEMONDIR"/dbus-daemon"' '"/run/current-system/sw/bin/dbus-daemon"'
+        --replace 'DBUS_DAEMONDIR"/dbus-daemon"' "\"$out/bin/dbus-daemon\""
     '';
 
     outputs = [ "out" "dev" "lib" "doc" ];
@@ -66,14 +66,9 @@ self =  stdenv.mkDerivation {
 
     installFlags = "sysconfdir=$(out)/etc datadir=$(out)/share";
 
-    # it's executed from $lib by absolute path
-    postFixup = ''
-      moveToOutput bin/dbus-launch "$lib"
-      ln -s "$lib/bin/dbus-launch" "$out/bin/"
-    '';
-
     passthru = {
-      dbus-launch = "${self.lib}/bin/dbus-launch";
+      lib = self.out;
+      dbus-launch = "${self.out}/bin/dbus-launch";
       daemon = self.out;
     };
 

@@ -7841,9 +7841,9 @@ in modules // {
     };
   };
 
-  pytools = buildPythonPackage rec { 
-    name = "pytools-${version}"; 
-    version = "2016.2.1"; 
+  pytools = buildPythonPackage rec {
+    name = "pytools-${version}";
+    version = "2016.2.1";
 
     src = pkgs.fetchFromGitHub {
       owner = "inducer";
@@ -7862,7 +7862,7 @@ in modules // {
     ];
 
     meta = {
-      homepage = https://github.com/inducer/pytools/; 
+      homepage = https://github.com/inducer/pytools/;
       description = "Miscellaneous Python lifesavers.";
       license = licenses.mit;
       maintainers = with maintainers; [ artuuge ];
@@ -10309,7 +10309,7 @@ in modules // {
       downloadPage = https://github.com/PythonCharmers/python-future/releases;
       license = licenses.mit;
       maintainers = with maintainers; [ prikhi ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   };
 
@@ -10431,7 +10431,7 @@ in modules // {
 
   gevent = buildPythonPackage rec {
     name = "gevent-1.0.2";
-    disabled = isPy3k || isPyPy;  # see https://github.com/surfly/gevent/issues/248
+    disabled = isPyPy;  # see https://github.com/surfly/gevent/issues/248
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/gevent/${name}.tar.gz";
@@ -13171,7 +13171,7 @@ in modules // {
     disabled = !isPy27;
 
     propagatedBuildInputs = with self; [ numpy matplotlib scipy ];
-   
+
     meta = {
       description = "Interfaces and utilities for the NEURON simulator and analysis of neural data";
       maintainers = [ maintainers.nico202 ];
@@ -13686,7 +13686,7 @@ in modules // {
   nipy = buildPythonPackage rec {
     version = "0.4.0";
     name = "nipy-${version}";
- 
+
     disabled = pythonOlder "2.6";
 
     checkPhase = ''    # wants to be run in a different directory
@@ -14119,7 +14119,15 @@ in modules // {
     blas = pkgs.openblasCompat;
   };
 
-  numpy = self.numpy_1_11;
+  numpy = self.numpy_1_10;
+
+  numpy_1_9 = self.buildNumpyPackage rec {
+    version = "1.9.2";
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/source/n/numpy/numpy-${version}.tar.gz";
+      sha256 = "0apgmsk9jlaphb2dp1zaxqzdxkf69h1y3iw2d1pcnkj31cmmypij";
+    };
+  };
 
   numpy_1_10 = self.buildNumpyPackage rec {
     version = "1.10.4";
@@ -14491,6 +14499,7 @@ in modules // {
   ordereddict = buildPythonPackage rec {
     name = "ordereddict-${version}";
     version = "1.1";
+    name = "ordereddict-1.1";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/o/ordereddict/${name}.tar.gz";
@@ -17044,6 +17053,14 @@ in modules // {
     doCheck = false;
 
     buildInputs = with self; [ mock ] ++ optionals stdenv.isDarwin [ pkgs.darwin.IOKit ];
+    checkPhase = ''
+      ${python.interpreter} test/test_psutil.py
+    '';
+
+    # Test suite needs `free`, therefore we have pkgs.busybox
+    buildInputs = [self.mock] ++
+      (if stdenv.isDarwin then [pkgs.darwin.IOKit] else [pkgs.busybox]);
+>>>>>>> working on making stuff work
 
     meta = {
       description = "Process and system utilization information interface for python";
@@ -17993,10 +18010,16 @@ in modules // {
         sha256 = "2fe3cc2fc66a56fdc35dbbc2bf1dd96a534abfc79ee6b2ad9ae4fe166e570c4b";
     };
 
+    buildInputs = [self.nose];
     propagatedBuildInputs = with self; [ astroid ];
 
+    doCheck = false;
+
     checkPhase = ''
-        cd pylint/test; ${python.interpreter} -m unittest discover -p "*test*"
+      (
+        cd pylint/test
+        ${python.interpreter} -m unittest discover -p "*test*"
+      )
     '';
 
     postInstall = ''
@@ -22898,7 +22921,7 @@ in modules // {
       description = "Twitter library for python";
       license = licenses.mit;
       maintainers = with maintainers; [ garbas ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   });
 
@@ -27739,7 +27762,7 @@ in modules // {
     };
 
     propagatedBuildInputs = with self; [
-      numpy 
+      numpy
       Theano
     ];
 

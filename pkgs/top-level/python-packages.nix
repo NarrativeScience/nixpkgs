@@ -8669,7 +8669,6 @@ in modules // {
   httpretty = buildPythonPackage rec {
     name = "httpretty-${version}";
     version = "0.8.6";
-    disabled = isPy3k;
     doCheck = false;
 
     src = pkgs.fetchurl {
@@ -8691,6 +8690,9 @@ in modules // {
       --- 566 ----
       !                 'content-length': str(len(self.body))
       DIFF
+
+      ${if !self.isPy3k then "" else
+        "patch -p0 -i ${../development/python-modules/httpretty/setup.py.patch}"}
     '';
 
     meta = {
@@ -11302,7 +11304,9 @@ in modules // {
     };
   };
 
-  numpy = let
+  numpy = numpy_1_9;
+
+  numpy_1_9 = let
     openblas = pkgs.openblasCompat;
   in buildPythonPackage ( rec {
     name = "numpy-${version}";
@@ -11656,7 +11660,6 @@ in modules // {
 
   ordereddict = buildPythonPackage rec {
     name = "ordereddict-1.1";
-    disabled = !isPy26;
 
     src = pkgs.fetchurl {
       url = "http://pypi.python.org/packages/source/o/ordereddict/${name}.tar.gz";
@@ -17036,8 +17039,9 @@ in modules // {
     };
   };
 
+  scipy = scipy_0_16;
 
-  scipy = buildPythonPackage rec {
+  scipy_0_16 = buildPythonPackage rec {
     name = "scipy-${version}";
     version = "0.16.1";
 

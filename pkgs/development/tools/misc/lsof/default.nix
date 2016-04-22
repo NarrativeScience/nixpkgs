@@ -1,4 +1,4 @@
-{ stdenv, fetchurl }:
+{ stdenv, fetchurl, pkgs }:
 
 stdenv.mkDerivation rec {
   name = "lsof-${version}";
@@ -15,14 +15,18 @@ stdenv.mkDerivation rec {
     sha256 = "061p18v0mhzq517791xkjs8a5dfynq1418a1mwxpji69zp2jzb41";
   };
 
+  LSOF_INCLUDE = "/dev/null";
+
   unpackPhase = "tar xvjf $src; cd lsof_*; tar xvf lsof_*.tar; sourceRoot=$( echo lsof_*/); ";
-  
+
   preBuild = "sed -i Makefile -e 's/^CFGF=/&	-DHASIPv6=1/;';";
-  
+
+  buildInputs = [pkgs.which];
+
   configurePhase = if stdenv.isDarwin
     then "./Configure -n darwin;"
     else "./Configure -n linux;";
-  
+
   installPhase = ''
     mkdir -p $out/bin $out/man/man8
     cp lsof.8 $out/man/man8/

@@ -1,7 +1,8 @@
 { lib, stdenv, fetchurl, perl, curl, bzip2, sqlite, openssl ? null, xz
-, pkgconfig, boehmgc, perlPackages, libsodium
+, pkgconfig, boehmgc, perlPackages, libsodium, bashInteractive
 , storeDir ? "/nix/store"
 , stateDir ? "/nix/var"
+, sysConfDir ? "/etc"
 }:
 
 let
@@ -16,7 +17,7 @@ let
     buildInputs = [ curl openssl sqlite xz ]
       ++ lib.optional (stdenv.isLinux || stdenv.isDarwin) libsodium;
 
-    propagatedBuildInputs = [ boehmgc ];
+    propagatedBuildInputs = [ boehmgc bashInteractive ];
 
     # Note: bzip2 is not passed as a build input, because the unpack phase
     # would end up using the wrong bzip2 when cross-compiling.
@@ -27,9 +28,19 @@ let
          export CXXFLAGS="-Wno-error=reserved-user-defined-literal"
       '';
 
+    patchPhase = ''
+      patch -p0 -i ${./more_purity.patch}
+      patch -p0 -i ${./user_pass_auth.patch}
+      patch -p0 -i ${./hex_hash.patch}
+      patch -p0 -i ${./disable_hash_check.patch}
+      sed -i 's|$ENV{NIX_BUILD_SHELL} // "bash"|"${bashInteractive}/bin/bash"|' \
+        scripts/nix-build.in
+    '';
+
     configureFlags =
       ''
-        --with-store-dir=${storeDir} --localstatedir=${stateDir} --sysconfdir=/etc
+        --with-store-dir=${storeDir} --localstatedir=${stateDir}
+        --sysconfdir=${sysConfDir}
         --with-dbi=${perlPackages.DBI}/${perl.libPrefix}
         --with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}
         --with-www-curl=${perlPackages.WWWCurl}/${perl.libPrefix}

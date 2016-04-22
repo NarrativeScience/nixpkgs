@@ -840,7 +840,7 @@
 "hfoldsty.source-1.15"="vyly65j4d7wl49gmm8wgpxrnv1s2ygq2";
 "ifsym-2015"="qy3w8h8slb44vg4s7q7ddb9db2fd9s06";
 "ifsym.doc-2015"="wpnp4ykxz7qa1ycwzkfpp5sjrs49np12";
-"inconsolata-1.05"="nbbx62cxjqaf9p1pb9ji77q1bsyavfsm";
+"inconsolata-1.05"="ym7yy9m5m8jghqchkng5112fd5knsgx4";
 "inconsolata.doc-1.05"="vgbfyv2i9pq6l5pzialwxhs2qsg6yr1y";
 "initials-2015"="sd0v18xidrmnllf1ihmgk02jz3v2qw8j";
 "initials.doc-2015"="6nhvprdk8nd8gxmhq2hb8s41rpjwmv4g";

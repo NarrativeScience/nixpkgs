@@ -1,5 +1,9 @@
 { stdenv, fetchurl, pkgs }:
 
+let
+  apple_sdk = pkgs.darwin.apple_sdk.sdk;
+in
+
 stdenv.mkDerivation rec {
   name = "lsof-${version}";
   version = "4.89";
@@ -15,9 +19,22 @@ stdenv.mkDerivation rec {
     sha256 = "061p18v0mhzq517791xkjs8a5dfynq1418a1mwxpji69zp2jzb41";
   };
 
-  LSOF_INCLUDE = "/dev/null";
+  LSOF_INCLUDE = if !stdenv.isDarwin then "/dev/null"
+                 else "${apple_sdk}/include";
 
-  unpackPhase = "tar xvjf $src; cd lsof_*; tar xvf lsof_*.tar; sourceRoot=$( echo lsof_*/); ";
+  unpackPhase = ''
+    tar xvjf $src
+    cd lsof_*
+    tar xvf lsof_*.tar
+    sourceRoot=$( echo lsof_*/)
+  '';
+
+  patchPhase = if !stdenv.isDarwin then "" else ''
+    for f in $(find dialects/darwin -type f); do
+      echo "Patching $f"
+      sed -i 's|/usr/include|${apple_sdk}/include|g' $f
+    done
+  '';
 
   preBuild = "sed -i Makefile -e 's/^CFGF=/&	-DHASIPv6=1/;';";
 

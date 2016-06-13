@@ -2,7 +2,6 @@
   bzip2,
   fetchFromGitHub,
   lib,
-  makeWrapper,
   nix,
   perl,
   perlPackages,
@@ -20,8 +19,6 @@ stdenv.mkDerivation rec {
     inherit rev;
     sha256 = "0mjzsiknln3isdri9004wwjjjpak5fj8ncizyncf5jv7g4m4q1pj";
   };
-
-  buildInputs = [ makeWrapper ];
 
   propagatedBuildInputs = [
     nix

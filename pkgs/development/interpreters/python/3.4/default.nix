@@ -44,6 +44,10 @@ stdenv.mkDerivation {
 
   NIX_LDFLAGS = stdenv.lib.optionalString stdenv.isLinux "-lgcc_s";
 
+  # Try to force some determinism into pyc generation
+  DETERMINISTIC_BUILD = true;
+  PYTHONHASHSEED = "123456789";
+
   prePatch = stdenv.lib.optionalString stdenv.isDarwin ''
     substituteInPlace configure --replace '`/usr/bin/arch`' '"i386"'
   '';

@@ -77,15 +77,9 @@ let
       sitePackages = "${self}/${python.sitePackages}";
     } // (attrs.passthru or {});
 
-    configurePhase = attrs.configurePhase or ''
-      runHook preConfigure
-
-      # patch python interpreter to write null timestamps when compiling python files
-      # this way python doesn't try to update them when we freeze timestamps in nix store
-      export DETERMINISTIC_BUILD=1
-
-      runHook postConfigure
-    '';
+    # Try to force some determinism into pyc generation
+    DETERMINISTIC_BUILD = true;
+    PYTHONHASHSEED = "123456789";
 
     # we copy nix_run_setup.py over so it's executed relative to the root of the source
     # many project make that assumption

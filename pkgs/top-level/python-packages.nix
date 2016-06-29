@@ -2703,6 +2703,7 @@ in modules // {
     propagatedBuildInputs = [ self.botocore self.jmespath ] ++
                             (if isPy3k then [] else [self.futures]);
     buildInputs = [ self.docutils self.nose self.mock ];
+    doCheck = false;
     checkPhase = ''
       runHook preCheck
       # This method is not in mock. It might have appeared in some versions.

@@ -14499,7 +14499,6 @@ in modules // {
   ordereddict = buildPythonPackage rec {
     name = "ordereddict-${version}";
     version = "1.1";
-    name = "ordereddict-1.1";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/o/ordereddict/${name}.tar.gz";
@@ -17052,7 +17051,6 @@ in modules // {
     # See also the older issue: https://code.google.com/p/psutil/issues/detail?id=434
     doCheck = false;
 
-    buildInputs = with self; [ mock ] ++ optionals stdenv.isDarwin [ pkgs.darwin.IOKit ];
     checkPhase = ''
       ${python.interpreter} test/test_psutil.py
     '';
@@ -17060,7 +17058,6 @@ in modules // {
     # Test suite needs `free`, therefore we have pkgs.busybox
     buildInputs = [self.mock] ++
       (if stdenv.isDarwin then [pkgs.darwin.IOKit] else [pkgs.busybox]);
->>>>>>> working on making stuff work
 
     meta = {
       description = "Process and system utilization information interface for python";

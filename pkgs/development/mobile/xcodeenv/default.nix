@@ -1,8 +1,8 @@
-{stdenv, version ? "6.4", xcodeBaseDir ? "/Applications/Xcode.app"}:
+{stdenv, xcodeBaseDir ? "/Applications/Xcode.app"}:
 
 rec {
   xcodewrapper = import ./xcodewrapper.nix {
-    inherit stdenv version xcodeBaseDir;
+    inherit stdenv xcodeBaseDir;
   };
 
   buildApp = import ./build-app.nix {

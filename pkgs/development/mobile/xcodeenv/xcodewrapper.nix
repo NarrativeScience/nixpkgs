@@ -1,25 +1,37 @@
-{stdenv, version, xcodeBaseDir}:
+{stdenv, xcodeBaseDir}:
 
 stdenv.mkDerivation {
-  name = "xcode-wrapper-"+version;
+  name = "xcode-wrapper";
   buildCommand = ''
     mkdir -p $out/bin
     cd $out/bin
-    ln -s /usr/bin/xcode-select
-    ln -s /usr/bin/security
-    ln -s /usr/bin/codesign
-    ln -s "${xcodeBaseDir}/Contents/Developer/usr/bin/xcodebuild"
-    ln -s "${xcodeBaseDir}/Contents/Developer/usr/bin/xcrun"
+    ln_fail () {
+      if [[ ! -e $1 ]]; then
+        echo "Target $1 does not exist" >&2
+        return 1
+      else
+        ln -s $1
+      fi
+    }
+    ln_fail /usr/bin/xcode-select
+    ln_fail /usr/bin/security
+    ln_fail /usr/bin/codesign
+    if [[ -e ${xcodeBaseDir}/Contents/Developer/usr/bin/xcodebuild ]]; then
+      ln -s ${xcodeBaseDir}/Contents/Developer/usr/bin/xcodebuild
+    else
+      ln_fail /usr/bin/xcodebuild
+    fi
+    if [[ -e "${xcodeBaseDir}/Contents/Developer/usr/bin/xcrun" ]]; then
+      ln -s ${xcodeBaseDir}/Contents/Developer/usr/bin/xcrun
+    else
+      ln_fail /usr/bin/xcrun
+    fi
     ln -s "${xcodeBaseDir}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator"
 
-    cd ..
+    cd $out
     ln -s "${xcodeBaseDir}/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs"
 
-    # Check if we have the xcodebuild version that we want
-    if [ -z "$($out/bin/xcodebuild -version | grep -x 'Xcode ${version}')" ]
-    then
-        echo "We require xcodebuild version: ${version}"
-        exit 1
-    fi
+    # Make sure xcodebuild works
+    $out/bin/xcodebuild -version
   '';
 }

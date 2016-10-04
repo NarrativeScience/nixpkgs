@@ -1515,6 +1515,21 @@ in modules // {
     };
   };
 
+  backports_ssl_match_hostname = self.buildPythonPackage rec {
+    name = "backports.ssl_match_hostname-${version}";
+    version = "3.5.0.1";
+
+    src = pkgs.fetchurl {
+      url = "mirror://pypi/b/backports.ssl_match_hostname/${name}.tar.gz";
+      sha256 = "1wndipik52cyqy0677zdgp90i435pmvwd89cz98lm7ri0y3xjajh";
+    };
+
+    meta = {
+      description = "The Secure Sockets layer is only actually *secure*";
+      homepage = http://bitbucket.org/brandon/backports.ssl_match_hostname;
+    };
+  };
+
   backports_lzma = self.buildPythonPackage rec {
     name = "backports.lzma-0.0.3";
     disabled = isPy3k;
@@ -4161,6 +4176,12 @@ in modules // {
     preCheck = ''
       # don't test bash builtins
       rm testing/test_argcomplete.py
+      rm testing/test_collection.py
+      rm testing/test_config.py
+      rm testing/test_junitxml.py
+      rm testing/test_runner.py
+      rm testing/test_terminal.py
+      rm testing/python/collect.py
     '';
 
     propagatedBuildInputs = with self; [ py ]
@@ -4957,14 +4978,21 @@ in modules // {
 
   docker = buildPythonPackage rec {
     name = "docker-py-${version}";
-    version = "1.7.2";
+    version = "1.10.2";
 
     src = pkgs.fetchurl {
-      url = "https://pypi.python.org/packages/source/d/docker-py/${name}.tar.gz";
-      sha256 = "0k6hm3vmqh1d3wr9rryyif5n4rzvcffdlb1k4jvzp7g4996d3ccm";
+      url = "https://pypi.python.org/packages/73/85/025e893a00f6537d495d238687610fc0bac87ddf40a792f60c3fb9231c24/docker-py-1.10.2.tar.gz";
+      md5 = "4997b07bbb5ee4434e9a38bd296b647d";
     };
 
-    propagatedBuildInputs = with self; [ six requests2 websocket_client ];
+    propagatedBuildInputs = with self; [
+      six
+      requests2
+      websocket_client
+      ipaddress
+      backports_ssl_match_hostname
+      docker-pycreds
+    ];
 
     # Version conflict
     doCheck = false;
@@ -4974,6 +5002,30 @@ in modules // {
       homepage = https://github.com/docker/docker-py;
       license = licenses.asl20;
     };
+  };
+
+  docker-pycreds = buildPythonPackage rec {
+    name = "docker-pycreds-${version}";
+    version = "0.2.1";
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/95/2e/3c99b8707a397153bc78870eb140c580628d7897276960da25d8a83c4719/docker-pycreds-0.2.1.tar.gz";
+      md5 = "0d80d5aebab771faf7e422b759c3055b";
+    };
+    patchPhase = ''
+      echo >> test-requirements.txt
+      sed -i 's/pytest-cov==2.3.1/pytest-cov>=2,<3/' test-requirements.txt
+      sed -i 's/flake8==2.4.1/flake8>=2,<3/' test-requirements.txt
+      sed -i 's/pytest==3.0.2/pytest/' test-requirements.txt
+    '';
+    buildInputs = with self; [
+      pytestcov
+      flake8
+      pytest
+      coverage
+    ];
+    propagatedBuildInputs = with self; [
+      six
+    ];
   };
 
   dockerpty = buildPythonPackage rec {
@@ -8903,13 +8955,13 @@ in modules // {
   };
 
   docker_compose = buildPythonPackage rec {
-    version = "1.6.2";
+    version = "1.8.0";
     name = "docker-compose-${version}";
     namePrefix = "";
 
     src = pkgs.fetchurl {
-      url = "https://pypi.python.org/packages/source/d/docker-compose/${name}.tar.gz";
-      sha256 = "10i4032d99hm5nj1p74pcad9i3gz1h5x3096byklncgssfyjqki6";
+      url = "https://pypi.python.org/packages/ea/9f/25addfea70919623fe605b0b5351b4e581b8e68634648ad9490d0dc5dca7/${name}.tar.gz";
+      sha256 = "1ad28x3marfmyrbibbkzy46bpbgc29k20ik661l8r49nr0m6px35";
     };
 
     # lots of networking and other fails
@@ -23943,7 +23995,7 @@ in modules // {
       sha256 = "cb3ab95617ed2098d24723e3ad04ed06c4fde661400b96daa1859af965bfe040";
     };
 
-    propagatedBuildInputs = with self; [ six backports_ssl_match_hostname_3_4_0_2 unittest2 argparse ];
+    propagatedBuildInputs = with self; [ six backports_ssl_match_hostname unittest2 argparse ];
 
     meta = {
       homepage = https://github.com/liris/websocket-client;

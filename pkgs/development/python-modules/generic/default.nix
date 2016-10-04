@@ -113,11 +113,33 @@ let
     # a common idiom in Python
     doInstallCheck = doInstallCheck;
 
-    installCheckPhase = attrs.checkPhase or ''
-      runHook preCheck
-      ${python.interpreter} nix_run_setup.py test
-      runHook postCheck
-    '';
+    installCheckPhase = attrs.checkPhase or (
+      let
+        configparser = if builtins.substring 0 1 python.majorVersion == "3"
+                       then "configparser"
+                       else "ConfigParser";
+      in
+      builtins.concatStringsSep "\n" [
+        "runHook preCheck"
+        # Make sure no test dependencies are fetched from pypi
+        ''
+          touch setup.cfg
+          ${python.interpreter} <<PYTHON
+          import ${configparser}
+          parser = ${configparser}.RawConfigParser()
+          parser.read('setup.cfg')
+          if not parser.has_section('easy_install'):
+              parser.add_section('easy_install')
+          parser.set('easy_install', 'index_url', 'file:///dev/null')
+          parser.set('easy_install', 'find_links', 'file:///dev/null')
+          with open('setup.cfg', 'w') as f:
+              parser.write(f)
+          PYTHON
+        ''
+        # Run the tests
+        "${python.interpreter} nix_run_setup.py test"
+        "runHook postCheck"
+    ]);
 
     postFixup = attrs.postFixup or ''
       wrapPythonPrograms
@@ -134,7 +156,7 @@ let
          export PATH="$tmp_path/bin:$PATH"
          export PYTHONPATH="$tmp_path/${python.sitePackages}:$PYTHONPATH"
          mkdir -p $tmp_path/${python.sitePackages}
-         ${bootstrapped-pip}/bin/pip install -e . --prefix $tmp_path
+         ${bootstrapped-pip}/bin/pip install -e . --prefix $tmp_path --no-deps
       fi
       ${postShellHook}
     '';

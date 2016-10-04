@@ -249,6 +249,7 @@ rec {
           echo "Adding $item"
           rsync -a $item/ layer/
         done
+        chmod -R +w layer
       else
         echo "No contents to add to layer."
       fi
@@ -315,9 +316,13 @@ rec {
       '';
 
       postMount = ''
-        mkdir -p mnt/{dev,proc,sys} mnt${storeDir}
+        # We will be mounting these directories on the chrooted file
+        # system, linking them to their equivalent system directories.
+        mkdir -p mnt/dev mnt/proc mnt/sys mnt${storeDir}
 
-        # Mount /dev, /sys and the nix store as shared folders.
+        # Mount /dev, /sys and the nix store as shared folders. We're
+        # not mounting /proc yet because this will be done by the
+        # unshare command.
         mount --rbind /dev mnt/dev
         mount --rbind /sys mnt/sys
         mount --rbind ${storeDir} mnt${storeDir}
@@ -330,9 +335,9 @@ rec {
 
         # Unmount directories and remove them.
         umount -R mnt/dev mnt/sys mnt${storeDir}
-        rmdir --ignore-fail-on-non-empty \
-          mnt/dev mnt/proc mnt/sys mnt${storeDir} \
-          mnt$(dirname ${storeDir})
+        for mount_dir in mnt/dev mnt/proc mnt/sys mnt${storeDir}; do
+          rm -r $mount_dir
+        done
       '';
 
       postUmount = ''
@@ -437,36 +442,44 @@ rec {
           parentID=$(jshon -e $fromImageName -e $fromImageTag -u \
                      < image/repositories)
 
+          # Look at every parent layer and record that layer's
+          # contents in the baseFiles file.
           for l in image/*/layer.tar; do
             ls_tar image/*/layer.tar >> baseFiles
           done
         fi
 
-        chmod -R ug+rw image
+        chmod ug+rw image
 
+        # Create a temporary directory in which we will build our new layer.
         mkdir temp
         cp ${layer}/* temp/
         chmod ug+w temp/*
 
-        echo "$(dirname ${storeDir})" >> layerFiles
-        echo '${storeDir}' >> layerFiles
+        echo "Recording new layer files..."
+        # Get the closure of the layer derivation that was created;
+        # that is, all of the nix store objects that it
+        # references. Write these to a file.
+        touch layerClosureFiles
         for dep in $(cat $layerClosure); do
-          find $dep >> layerFiles
+          find $dep >> layerClosureFiles
         done
 
-        echo "Adding layer..."
         # Record the contents of the tarball with ls_tar.
         ls_tar temp/layer.tar >> baseFiles
 
         # Get the files in the new layer which were *not* present in
-        # the old layer, and record them as newFiles.
-        comm <(sort -n baseFiles|uniq) \
-             <(sort -n layerFiles|uniq|grep -v ${layer}) -1 -3 > newFiles
+        # the old layer, and record them in a text file.
+        comm <(sort baseFiles | uniq) \
+             <(sort layerClosureFiles | uniq | grep -v ${layer}) -1 -3 \
+             > newFiles
+
         # Append the new files to the layer.
         tar -rpf temp/layer.tar --mtime=0 --no-recursion --files-from newFiles
 
-        echo "Adding meta..."
+        # Now we've built our new layer; record some metadata about it.
 
+        echo "Adding meta..."
         # If we have a parentID, add it to the json metadata.
         if [[ -n "$parentID" ]]; then
           cat temp/json | jshon -s "$parentID" -i parent > tmpjson

@@ -2521,6 +2521,7 @@ in modules // {
       [ self.dateutil
         self.requests2
         self.jmespath
+        self.docutils
       ];
 
     buildInputs = with self; [ docutils mock nose ];

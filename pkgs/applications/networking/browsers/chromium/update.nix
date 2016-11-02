@@ -71,7 +71,7 @@ in rec {
     '');
 
     channels = lib.fold lib.recursiveUpdate {} (map (attrs: {
-      ${attrs.os}.${attrs.channel} = attrs // {
+      "${attrs.os}"."${attrs.channel}" = attrs // {
         history = let
           drvName = "omahaproxy-${attrs.os}.${attrs.channel}-info";
           history = csv2nix drvName "http://omahaproxy.appspot.com/history";
@@ -180,10 +180,10 @@ in rec {
     '');
 
     isLatest = channel: version: let
-      ourVersion = sources.${channel}.version or null;
+      ourVersion = sources."${channel}".version or null;
     in if ourVersion == null then false
-       else lib.versionOlder version sources.${channel}.version
-         || version == sources.${channel}.version;
+       else lib.versionOlder version sources."${channel}".version
+         || version == sources."${channel}".version;
 
     # We only support GNU/Linux right now.
     linuxChannels = let
@@ -193,7 +193,7 @@ in rec {
           sha256 = getHash (fetchLatest channel);
         };
         keepOld = let
-          oldChannel = sources.${channelName};
+          oldChannel = sources."${channelName}";
         in {
           inherit (oldChannel) version sha256;
         } // lib.optionalAttrs (oldChannel ? sha256bin32) {
@@ -209,7 +209,7 @@ in rec {
       fetchArch = arch: tryFetch (getDebURL channelName version arch debURL);
       packages = lib.genAttrs ["i386" "amd64"] fetchArch;
       isNew = arch: attr: !(builtins.hasAttr attr channel)
-                       && packages.${arch}.success;
+                       && packages."${arch}".success;
     in channel // lib.optionalAttrs (isNew "i386" "sha256bin32") {
       sha256bin32 = getHash (packages.i386.value);
     } // lib.optionalAttrs (isNew "amd64" "sha256bin64") {

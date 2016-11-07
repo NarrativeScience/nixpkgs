@@ -4076,6 +4076,7 @@ in modules // {
     propagatedBuildInputs = with self; [ pkgs.libffi pycparser ];
     buildInputs = with self; [ pytest ];
 
+    doCheck = !stdenv.isDarwin;
     checkPhase = ''
       py.test
     '';

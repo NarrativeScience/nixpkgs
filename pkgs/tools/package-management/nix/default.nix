@@ -33,6 +33,7 @@ let
       patch -p0 -i ${./user_pass_auth.patch}
       patch -p0 -i ${./hex_hash.patch}
       patch -p0 -i ${./disable_hash_check.patch}
+      patch -p0 -i ${./disable-hash-unit-test.patch}
       sed -i 's|$ENV{NIX_BUILD_SHELL} // "bash"|"${bashInteractive}/bin/bash"|' \
         scripts/nix-build.in
     '';
@@ -100,10 +101,10 @@ in rec {
   nix = nixStable;
 
   nixStable = common rec {
-    name = "nix-1.11.4";
+    name = "nix-1.11.2";
     src = fetchurl {
       url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "937779ed2efaa3dec210250635401980acb99a6fea6d7374fbaea78231b36d34";
+      sha256 = "fc1233814ebb385a2a991c1fb88c97b344267281e173fea7d9acd3f9caf969d6";
     };
   };
 

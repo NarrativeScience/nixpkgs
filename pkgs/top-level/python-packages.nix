@@ -4884,6 +4884,8 @@ in {
       url = "mirror://pypi/p/pytest/${name}.tar.gz";
       sha256 = "1n6igbc1b138wx1q5gca4pqw1j6nsyicfxds5n0b5989kaxqmh8j";
     };
+
+    doCheck = false;
   };
 
   pytest_30 = self.pytest_27.override rec {
@@ -18200,6 +18202,7 @@ in {
     LC_ALL="en_US.UTF-8";
     buildInputs = with self; [ pkgs.glibcLocales pytest ];
 
+    doCheck = !pkgs.stdenv.isDarwin;
     checkPhase = ''
       py.test
     '';
@@ -18956,7 +18959,7 @@ in {
   protobuf3_0_0b2 = (self.protobufBuild pkgs.protobuf3_0_0b2).override { doCheck = false; };
   protobuf2_6 = self.protobufBuild pkgs.protobuf2_6;
   protobuf2_5 = self.protobufBuild pkgs.protobuf2_5;
-  protobuf3_0 = self.protobufBuild pkgs.protobuf3_0;
+#   protobuf3_0 = self.protobufBuild pkgs.protobuf3_0;
   protobufBuild = protobuf: buildPythonPackage rec {
     inherit (protobuf) name src;
     atLeast3 = versionAtLeast protobuf.version "3.0.0";

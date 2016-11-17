@@ -6832,7 +6832,7 @@ with pkgs;
 
   gnome_doc_utils = callPackage ../development/tools/documentation/gnome-doc-utils {};
 
-  gnum4 = callPackage ../development/tools/misc/gnum4 { };
+  gnum4 = callPackage ../development/tools/misc/gnum4 {};
 
   gnumake380 = callPackage ../development/tools/build-managers/gnumake/3.80 { };
   gnumake382 = callPackage ../development/tools/build-managers/gnumake/3.82 { };
@@ -8212,7 +8212,7 @@ with pkgs;
 
   hyena = callPackage ../development/libraries/hyena { };
 
-  icu = callPackage ../development/libraries/icu { };
+  icu = callPackage ../development/libraries/icu {};
 
   id3lib = callPackage ../development/libraries/id3lib { };
 
@@ -10806,6 +10806,13 @@ with pkgs;
   };
 
   ### DEVELOPMENT / PYTHON MODULES
+  # Builds a python package set, given some base python derivation.
+  mkPythonPackages = {python, overrides}: let
+    _pythonPackages = (callPackage ./python-packages.nix {
+      inherit python;
+      self = _pythonPackages;
+    }) // overrides;
+  in _pythonPackages;
 
   # Python package sets.
 
@@ -12538,6 +12545,8 @@ with pkgs;
       udev.bin = systemd;     # ${systemd.udev.bin}/bin/udevadm
       udev.lib = libudev.out; # ${systemd.udev.lib}/lib/libudev.*
     };
+
+  systemd-linter = callPackage ../tools/misc/systemd-linter {};
 
   # standalone cryptsetup generator for systemd
   systemd-cryptsetup-generator = callPackage ../os-specific/linux/systemd/cryptsetup-generator.nix { };
@@ -14621,6 +14630,11 @@ with pkgs;
     openjpeg = null;
     libwebp = null;
   };
+
+  # imagemagick7 = imagemagickBig.override {
+  #   version = "7.0.3-7";
+  #   binOnly = true;
+  # };
 
   imagemagick = imagemagickBig.override {
     ghostscript = null;
@@ -18562,10 +18576,10 @@ with pkgs;
 
   mynewt-newt = callPackage ../tools/package-management/mynewt-newt { };
 
-  inherit (callPackages ../tools/package-management/nix {
-      storeDir = config.nix.storeDir or "/nix/store";
-      stateDir = config.nix.stateDir or "/nix/var";
-      })
+  inherit (with builtins; callPackages ../tools/package-management/nix {
+    storeDir = config.nix.storeDir or builtins.storeDir;
+    stateDir = config.nix.stateDir or (dirOf builtins.storeDir + "/var");
+    })
     nix
     nixStable
     nixUnstable;

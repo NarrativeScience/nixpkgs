@@ -6353,7 +6353,7 @@ with pkgs;
 
   gnome_doc_utils = callPackage ../development/tools/documentation/gnome-doc-utils {};
 
-  gnum4 = callPackage ../development/tools/misc/gnum4 { };
+  gnum4 = callPackage ../development/tools/misc/gnum4 {};
 
   gnumake380 = callPackage ../development/tools/build-managers/gnumake/3.80 { };
   gnumake382 = callPackage ../development/tools/build-managers/gnumake/3.82 { };
@@ -7657,7 +7657,14 @@ with pkgs;
 
   hyena = callPackage ../development/libraries/hyena { };
 
-  icu = callPackage ../development/libraries/icu { };
+  icu = callPackage ../development/libraries/icu {
+    version = "57.1";
+    sha256 = "10cmkqigxh9f73y7q3p991q6j8pph0mrydgj11w1x6wlcp5ng37z";
+  };
+  icu_54_1 = callPackage ../development/libraries/icu {
+    version = "54.1";
+    sha256 = "1cwapgjmvrcv1n2wjspj3vahidg596gjfp4jn1gcb4baralcjayl";
+  };
 
   id3lib = callPackage ../development/libraries/id3lib { };
 
@@ -10096,6 +10103,13 @@ with pkgs;
   };
 
   ### DEVELOPMENT / PYTHON MODULES
+  # Builds a python package set, given some base python derivation.
+  mkPythonPackages = {python, overrides}: let
+    _pythonPackages = (callPackage ./python-packages.nix {
+      inherit python;
+      self = _pythonPackages;
+    }) // overrides;
+  in _pythonPackages;
 
   # `nix-env -i python-nose` installs for 2.7, the default python.
   # Therefore we do not recurse into attributes here, in contrast to
@@ -13704,6 +13718,11 @@ with pkgs;
     libxml2 = null;
     openjpeg = null;
     libwebp = null;
+  };
+
+  imagemagick7 = imagemagickBig.override {
+    version = "7.0.3-7";
+    binOnly = true;
   };
 
   imagemagick = imagemagickBig.override {
@@ -17531,9 +17550,9 @@ with pkgs;
     stdenv = overrideCC stdenv gcc49;
   };
 
-  inherit (callPackages ../tools/package-management/nix {
-      storeDir = config.nix.storeDir or "/nix/store";
-      stateDir = config.nix.stateDir or "/nix/var";
+  inherit (with builtins; callPackages ../tools/package-management/nix {
+      storeDir = config.nix.storeDir or storeDir;
+      stateDir = config.nix.stateDir or dirOf storeDir + "/var";
       })
     nix
     nixStable

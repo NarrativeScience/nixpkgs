@@ -3072,6 +3072,7 @@ in {
       [ self.dateutil
         self.requests2
         self.jmespath
+        self.docutils
       ];
 
     buildInputs = with self; [ docutils mock nose ];
@@ -4824,6 +4825,8 @@ in {
       substituteInPlace testing/cffi0/test_ownlib.py --replace "gcc" "cc"
     '';
 
+    doCheck = !stdenv.isDarwin;
+
     checkPhase = ''
       py.test
     '';
@@ -6188,6 +6191,10 @@ in {
 
     # Flake8 version conflict
     doCheck = false;
+
+    buildInputs = optional stdenv.isLinux pkgs.glibcLocales;
+    LANG = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
 
     meta = {
       description = "An API client for docker written in Python";
@@ -11803,7 +11810,7 @@ in {
       downloadPage = https://github.com/PythonCharmers/python-future/releases;
       license = licenses.mit;
       maintainers = with maintainers; [ prikhi ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   };
 
@@ -12226,7 +12233,11 @@ in {
 
   google_apputils = buildPythonPackage rec {
     name = "google-apputils-0.4.1";
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
 
+=======
+    dontStrip = true;
+>>>>>>> getting stuff working off of recent nixpkgs checkout
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/google-apputils/${name}.tar.gz";
       sha256 = "1sxsm5q9vr44qzynj8l7p3l7ffb0zl1jdqhmmzmalkx941nbnj1b";
@@ -14626,6 +14637,7 @@ in {
     };
   };
 
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
   h2 = buildPythonPackage rec {
     name = "h2-${version}";
     version = "2.5.1";
@@ -14660,6 +14672,8 @@ in {
     };
   };
 
+=======
+>>>>>>> getting stuff working off of recent nixpkgs checkout
   mock = buildPythonPackage (rec {
     name = "mock-2.0.0";
 
@@ -16008,10 +16022,64 @@ in {
     };
   };
 
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
   numba = callPackage ../development/python-modules/numba { };
 
   numexpr = buildPythonPackage rec {
     version = "2.6.1";
+=======
+  numba = buildPythonPackage rec {
+    version = "0.27.0";
+    name = "numba-${version}";
+
+    src = pkgs.fetchurl {
+      url = "mirror://pypi/n/numba/${name}.tar.gz";
+      sha256 = "5fc8069cdc839b8b44ac6c54260902f60cbd77bd027b20999970a81cce7008ba";
+    };
+
+    NIX_CFLAGS_COMPILE = stdenv.lib.optionalString stdenv.isDarwin "-I${pkgs.libcxx}/include/c++/v1";
+
+    propagatedBuildInputs = with self; [numpy llvmlite argparse] ++ optional (!isPy3k) funcsigs ++ optional (isPy27 || isPy33) singledispatch;
+    # Future work: add Cuda support.
+    #propagatedBuildInputs = with self; [numpy llvmlite argparse pkgs.cudatoolkit6];
+    #buildPhase = ''
+    #  export NUMBAPRO_CUDA_DRIVER=
+    #  export NUMBAPRO_NVVM=${pkgs.cudatoolkit6}
+    #  export NUMBAPRO_LIBDEVICE=
+    #'';
+
+    # Copy test script into $out and run the test suite.
+    checkPhase = ''
+      cp runtests.py $out/${python.sitePackages}/numba/runtests.py
+      ${python.interpreter} $out/${python.sitePackages}/numba/runtests.py
+    '';
+    # ImportError: cannot import name '_typeconv'
+    doCheck = false;
+
+    meta = {
+      homepage = http://numba.pydata.org/;
+      license = licenses.bsd2;
+      description = "Compiling Python code using LLVM";
+      maintainers = with maintainers; [ fridh ];
+    };
+  };
+  # numexpr-darwin-deps is used to bring some introspection utilities
+  # into scope on MacOS that numexpr uses. It prevents some fairly
+  # inconsequential (but annoying) errors.
+  numexpr = let numexpr-darwin-deps = stdenv.mkDerivation {
+    name = "numexpr-darwin-deps";
+    version = "0.0.0";
+    buildCommand = ''
+      mkdir -p $out/bin
+      ln -s /usr/bin/arch $out/bin/arch
+      ln -s /usr/bin/machine $out/bin/machine
+      ln -s /usr/sbin/sysctl $out/bin/sysctl
+    '';
+    meta.platforms = platforms.darwin;
+  };
+  in buildPythonPackage rec {
+    version = "2.5.2";
+>>>>>>> getting stuff working off of recent nixpkgs checkout
     name = "numexpr-${version}";
 
     src = pkgs.fetchurl {
@@ -16019,7 +16087,15 @@ in {
       sha256 = "db2ee72f277b23c82d204189290ea4b792f9bd5b9d67744b045f8c2a8e929a06";
     };
 
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
     propagatedBuildInputs = with self; [ numpy ];
+=======
+    # Tests fail with python 3. https://github.com/pydata/numexpr/issues/177
+    # doCheck = !isPy3k;
+
+    propagatedBuildInputs = with self; [ numpy ]
+      ++ stdenv.lib.optional stdenv.isDarwin numexpr-darwin-deps;
+>>>>>>> getting stuff working off of recent nixpkgs checkout
 
     # Run the test suite.
     # It requires the build path to be in the python search path.
@@ -16097,7 +16173,15 @@ in {
     blas = pkgs.openblasCompat;
   };
 
-  numpy = self.numpy_1_11;
+  numpy = self.numpy_1_10;
+
+  numpy_1_9 = self.buildNumpyPackage rec {
+    version = "1.9.2";
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/source/n/numpy/numpy-${version}.tar.gz";
+      sha256 = "0apgmsk9jlaphb2dp1zaxqzdxkf69h1y3iw2d1pcnkj31cmmypij";
+    };
+  };
 
   numpy_1_10 = self.buildNumpyPackage rec {
     version = "1.10.4";
@@ -17854,7 +17938,9 @@ in {
       sed -i 's@python@${python.interpreter}@' .testr.conf
     '';
 
-    buildInputs = with self; [ pbr testtools testrepository mock ];
+    doCheck = !isPy3k;
+    buildInputs = if isPy3k then [] else
+                  (with self; [ pbr testtools testrepository mock ]);
     propagatedBuildInputs = with self; [ six requests2 ];
   };
 
@@ -18406,9 +18492,7 @@ in {
     LC_ALL="en_US.UTF-8";
     buildInputs = with self; [ pkgs.glibcLocales pytest ];
 
-    checkPhase = ''
-      py.test
-    '';
+    doCheck = false;
 
     meta = {
       homepage = https://github.com/GreenSteam/pep257/;
@@ -19169,17 +19253,21 @@ in {
   protobuf2_5 = self.protobufBuild pkgs.protobuf2_5;
   protobufBuild = protobuf: buildPythonPackage rec {
     inherit (protobuf) name src;
-    disabled = isPy3k || isPyPy;
+    atLeast3 = versionAtLeast protobuf.version "3.0.0";
+    atLeast2 = versionAtLeast protobuf.version "2.6.0";
+    disabled = (!atLeast3 && isPy3k) || isPyPy;
 
+    buildInputs = optional atLeast3 self.nose;
     propagatedBuildInputs = with self; [ protobuf google_apputils ];
 
-    prePatch = ''
+    prePatch = if atLeast3 then "cd python" else ''
       while [ ! -d python ]; do
         cd *
       done
       cd python
     '';
 
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
     preConfigure = optionalString (versionAtLeast protobuf.version "2.6.0") ''
       export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
       export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
@@ -19192,6 +19280,16 @@ in {
     checkPhase = ''
       runHook preCheck
     '' + (if versionAtLeast protobuf.version "2.6.0" then ''
+=======
+    preConfigure = optionalString (atLeast2 && !atLeast3) ''
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
+    '';
+
+    checkPhase = if atLeast3 then ''
+      nosetests google/protobuf/internal
+    '' else if atLeast2 then ''
+>>>>>>> getting stuff working off of recent nixpkgs checkout
       ${python.executable} setup.py google_test --cpp_implementation
       echo "sanity checking the C extension . . ."
       echo "import google.protobuf.descriptor" | ${python.executable}
@@ -19201,7 +19299,7 @@ in {
       runHook postCheck
     '';
 
-    installFlags = optional (versionAtLeast protobuf.version "2.6.0") "--install-option='--cpp_implementation'";
+    installFlags = optional atLeast2 "--install-option='--cpp_implementation'";
 
     # the _message.so isn't installed, so we'll do that manually.
     # if someone can figure out a less hacky way to get the _message.so to
@@ -20018,6 +20116,7 @@ in {
 
     buildInputs = [ pkgs.libev ];
 
+<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
     libEvSharedLibrary =
       if !stdenv.isDarwin
       then "${pkgs.libev}/lib/libev.so.4"
@@ -20026,6 +20125,13 @@ in {
     postPatch = ''
       test -f "${libEvSharedLibrary}" || { echo "ERROR: File ${libEvSharedLibrary} does not exist, please fix nix expression for pyev"; exit 1; }
       sed -i -e "s|libev_dll_name = find_library(\"ev\")|libev_dll_name = \"${libEvSharedLibrary}\"|" setup.py
+=======
+    postPatch = let
+      libev_so = if stdenv.isDarwin then "${pkgs.libev}/lib/libev.4.dylib" else "${pkgs.libev}/lib/libev.so.4";
+    in ''
+      test -f "${libev_so}" || { echo "ERROR: File ${libev_so} does not exist, please fix nix expression for pyev"; exit 1; }
+      sed -i -e "s|libev_dll_name = find_library(\"ev\")|libev_dll_name = \"${libev_so}\"|" setup.py
+>>>>>>> getting stuff working off of recent nixpkgs checkout
     '';
 
     meta = {
@@ -20295,10 +20401,16 @@ in {
         sha256 = "2fe3cc2fc66a56fdc35dbbc2bf1dd96a534abfc79ee6b2ad9ae4fe166e570c4b";
     };
 
+    buildInputs = [self.nose];
     propagatedBuildInputs = with self; [ astroid ];
 
+    doCheck = false;
+
     checkPhase = ''
-        cd pylint/test; ${python.interpreter} -m unittest discover -p "*test*"
+      (
+        cd pylint/test
+        ${python.interpreter} -m unittest discover -p "*test*"
+      )
     '';
 
     postInstall = ''
@@ -23781,7 +23893,7 @@ in {
     disabled = isPyPy || isPy26 || isPy27;
 
     checkPhase = ''
-    ${python.interpreter} test/*.py                                         #*/
+      ${python.interpreter} test/*.py                                    #*/
     '';
     meta = {
       description = "Simple and extensible IRC bot";
@@ -24123,7 +24235,7 @@ in {
     propagatedBuildInputs = with self; [ pillow blessings ];
 
     # fails with obscure error
-    doCheck = !isPy3k;
+    doCheck = !isPy3k && !stdenv.isDarwin;
 
     meta = {
       maintainers = with maintainers; [ domenkozar ];
@@ -25892,7 +26004,7 @@ in {
       description = "Twitter library for python";
       license = licenses.mit;
       maintainers = with maintainers; [ garbas ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   });
 
@@ -29340,12 +29452,11 @@ EOF
   };
 
   datadiff = buildPythonPackage rec {
-    name = "datadiff-1.1.6";
-    disabled = ! isPy27;
+    name = "datadiff-2.0.0";
 
     src = pkgs.fetchurl {
-      url = "mirror://pypi/d/datadiff/datadiff-1.1.6.zip";
-      sha256 = "f1402701063998f6a70609789aae8dc05703f3ad0a34882f6199653654c55543";
+      url = "https://pypi.python.org/packages/87/72/74d5c3d9b4574d3df45f61894aa28344b22f4b059d192cc3753c112f62f0/datadiff-2.0.0.tar.gz";
+      sha256 = "1a6ai5p07lzq04hxnzn36b49m4sz8ajplyrfxr3m5plnm109812l";
     };
 
     buildInputs = with self; [ nose ];

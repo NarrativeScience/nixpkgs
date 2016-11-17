@@ -1,8 +1,9 @@
-{ lib, stdenv, fetchurl, fetchFromGitHub, perl, curl, bzip2, sqlite, openssl ? null, xz
-, pkgconfig, boehmgc, perlPackages, libsodium, aws-sdk-cpp
-, autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl
-, storeDir ? "/nix/store"
-, stateDir ? "/nix/var"
+{ lib, stdenv, fetchurl, perl, curl, bzip2, sqlite, openssl ? null, xz
+, pkgconfig, boehmgc, perlPackages, libsodium, bashInteractive
+, autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl, aws-sdk-cpp, fetchFromGitHub
+, storeDir ? builtins.storeDir
+, stateDir ? "${builtins.dirOf storeDir}/var"
+, sysConfDir ? "/etc"
 }:
 
 let
@@ -27,7 +28,7 @@ let
             customMemoryManagement = false;
           });
 
-    propagatedBuildInputs = [ boehmgc ];
+    propagatedBuildInputs = [ boehmgc bashInteractive ];
 
     # Note: bzip2 is not passed as a build input, because the unpack phase
     # would end up using the wrong bzip2 when cross-compiling.
@@ -38,10 +39,20 @@ let
          export CXXFLAGS="-Wno-error=reserved-user-defined-literal"
       '';
 
+    patchPhase = ''
+      patch -p1 -i ${./more_purity.patch}
+      patch -p0 -i ${./user_pass_auth.patch}
+      patch -p0 -i ${./hex_hash.patch}
+      patch -p0 -i ${./disable_hash_check.patch}
+      patch -p0 -i ${./disable-hash-unit-test.patch}
+      sed -i 's|$ENV{NIX_BUILD_SHELL} // "bash"|"${bashInteractive}/bin/bash"|' \
+        scripts/nix-build.in
+    '';
+
     configureFlags =
       [ "--with-store-dir=${storeDir}"
         "--localstatedir=${stateDir}"
-        "--sysconfdir=/etc"
+        "--sysconfdir=${sysConfDir}"
         "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
         "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
         "--disable-init-state"

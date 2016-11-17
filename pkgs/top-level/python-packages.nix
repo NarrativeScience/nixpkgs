@@ -3072,6 +3072,7 @@ in {
       [ self.dateutil
         self.requests2
         self.jmespath
+        self.docutils
       ];
 
     buildInputs = with self; [ docutils mock nose ];
@@ -4824,6 +4825,8 @@ in {
       substituteInPlace testing/cffi0/test_ownlib.py --replace "gcc" "cc"
     '';
 
+    doCheck = !stdenv.isDarwin;
+
     checkPhase = ''
       py.test
     '';
@@ -6174,10 +6177,6 @@ in {
       sha256 = "05f49f6hnl7npmi7kigg0ibqk8s3fhzx1ivvz1kqvlv4ay3paajc";
     };
 
-    buildInputs = [ pkgs.glibcLocales ];
-
-    LC_ALL="en_US.UTF-8";
-
     propagatedBuildInputs = with self; [
       six
       requests2
@@ -6189,6 +6188,10 @@ in {
 
     # Flake8 version conflict
     doCheck = false;
+
+    buildInputs = optional stdenv.isLinux pkgs.glibcLocales;
+    LANG = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
 
     meta = {
       description = "An API client for docker written in Python";
@@ -11804,7 +11807,7 @@ in {
       downloadPage = https://github.com/PythonCharmers/python-future/releases;
       license = licenses.mit;
       maintainers = with maintainers; [ prikhi ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   };
 
@@ -12227,7 +12230,7 @@ in {
 
   google_apputils = buildPythonPackage rec {
     name = "google-apputils-0.4.1";
-
+    dontStrip = true;
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/google-apputils/${name}.tar.gz";
       sha256 = "1sxsm5q9vr44qzynj8l7p3l7ffb0zl1jdqhmmzmalkx941nbnj1b";
@@ -16040,7 +16043,8 @@ in {
       sha256 = "db2ee72f277b23c82d204189290ea4b792f9bd5b9d67744b045f8c2a8e929a06";
     };
 
-    propagatedBuildInputs = with self; [ numpy ];
+    propagatedBuildInputs = with self; [ numpy ]
+      ++ stdenv.lib.optional stdenv.isDarwin numexpr-darwin-deps;
 
     # Run the test suite.
     # It requires the build path to be in the python search path.
@@ -16118,7 +16122,15 @@ in {
     blas = pkgs.openblasCompat;
   };
 
-  numpy = self.numpy_1_11;
+  numpy = self.numpy_1_10;
+
+  numpy_1_9 = self.buildNumpyPackage rec {
+    version = "1.9.2";
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/source/n/numpy/numpy-${version}.tar.gz";
+      sha256 = "0apgmsk9jlaphb2dp1zaxqzdxkf69h1y3iw2d1pcnkj31cmmypij";
+    };
+  };
 
   numpy_1_10 = self.buildNumpyPackage rec {
     version = "1.10.4";
@@ -17875,7 +17887,9 @@ in {
       sed -i 's@python@${python.interpreter}@' .testr.conf
     '';
 
-    buildInputs = with self; [ pbr testtools testrepository mock ];
+    doCheck = !isPy3k;
+    buildInputs = if isPy3k then [] else
+                  (with self; [ pbr testtools testrepository mock ]);
     propagatedBuildInputs = with self; [ six requests2 ];
   };
 
@@ -18427,9 +18441,7 @@ in {
     LC_ALL="en_US.UTF-8";
     buildInputs = with self; [ pkgs.glibcLocales pytest ];
 
-    checkPhase = ''
-      py.test
-    '';
+    doCheck = false;
 
     meta = {
       homepage = https://github.com/GreenSteam/pep257/;
@@ -19190,11 +19202,14 @@ in {
   protobuf2_5 = self.protobufBuild pkgs.protobuf2_5;
   protobufBuild = protobuf: buildPythonPackage rec {
     inherit (protobuf) name src;
-    disabled = isPy3k || isPyPy;
+    atLeast3 = versionAtLeast protobuf.version "3.0.0";
+    atLeast2 = versionAtLeast protobuf.version "2.6.0";
+    disabled = (!atLeast3 && isPy3k) || isPyPy;
 
+    buildInputs = optional atLeast3 self.nose;
     propagatedBuildInputs = with self; [ protobuf google_apputils ];
 
-    prePatch = ''
+    prePatch = if atLeast3 then "cd python" else ''
       while [ ! -d python ]; do
         cd *
       done
@@ -19222,7 +19237,7 @@ in {
       runHook postCheck
     '';
 
-    installFlags = optional (versionAtLeast protobuf.version "2.6.0") "--install-option='--cpp_implementation'";
+    installFlags = optional atLeast2 "--install-option='--cpp_implementation'";
 
     # the _message.so isn't installed, so we'll do that manually.
     # if someone can figure out a less hacky way to get the _message.so to
@@ -20316,10 +20331,16 @@ in {
         sha256 = "2fe3cc2fc66a56fdc35dbbc2bf1dd96a534abfc79ee6b2ad9ae4fe166e570c4b";
     };
 
+    buildInputs = [self.nose];
     propagatedBuildInputs = with self; [ astroid ];
 
+    doCheck = false;
+
     checkPhase = ''
-        cd pylint/test; ${python.interpreter} -m unittest discover -p "*test*"
+      (
+        cd pylint/test
+        ${python.interpreter} -m unittest discover -p "*test*"
+      )
     '';
 
     postInstall = ''
@@ -23802,7 +23823,7 @@ in {
     disabled = isPyPy || isPy26 || isPy27;
 
     checkPhase = ''
-    ${python.interpreter} test/*.py                                         #*/
+      ${python.interpreter} test/*.py                                    #*/
     '';
     meta = {
       description = "Simple and extensible IRC bot";
@@ -24144,7 +24165,7 @@ in {
     propagatedBuildInputs = with self; [ pillow blessings ];
 
     # fails with obscure error
-    doCheck = !isPy3k;
+    doCheck = !isPy3k && !stdenv.isDarwin;
 
     meta = {
       maintainers = with maintainers; [ domenkozar ];
@@ -25915,7 +25936,7 @@ in {
       description = "Twitter library for python";
       license = licenses.mit;
       maintainers = with maintainers; [ garbas ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   });
 
@@ -29363,12 +29384,11 @@ EOF
   };
 
   datadiff = buildPythonPackage rec {
-    name = "datadiff-1.1.6";
-    disabled = ! isPy27;
+    name = "datadiff-2.0.0";
 
     src = pkgs.fetchurl {
-      url = "mirror://pypi/d/datadiff/datadiff-1.1.6.zip";
-      sha256 = "f1402701063998f6a70609789aae8dc05703f3ad0a34882f6199653654c55543";
+      url = "https://pypi.python.org/packages/87/72/74d5c3d9b4574d3df45f61894aa28344b22f4b059d192cc3753c112f62f0/datadiff-2.0.0.tar.gz";
+      sha256 = "1a6ai5p07lzq04hxnzn36b49m4sz8ajplyrfxr3m5plnm109812l";
     };
 
     buildInputs = with self; [ nose ];

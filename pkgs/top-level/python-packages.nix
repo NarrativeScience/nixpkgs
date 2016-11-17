@@ -3065,6 +3065,7 @@ in {
       [ self.dateutil
         self.requests
         self.jmespath
+        self.docutils
       ];
 
     buildInputs = with self; [ docutils mock nose ];
@@ -11759,7 +11760,7 @@ in {
 
   google_apputils = buildPythonPackage rec {
     name = "google-apputils-0.4.1";
-
+    dontStrip = true;
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/google-apputils/${name}.tar.gz";
       sha256 = "1sxsm5q9vr44qzynj8l7p3l7ffb0zl1jdqhmmzmalkx941nbnj1b";
@@ -15231,7 +15232,8 @@ in {
       sha256 = "6ab8ff5c19e7f452966bf5a3220b845cf3244fe0b96544f7f9acedcc2db5c705";
     };
 
-    propagatedBuildInputs = with self; [ numpy ];
+    propagatedBuildInputs = with self; [ numpy ]
+      ++ stdenv.lib.optional stdenv.isDarwin numexpr-darwin-deps;
 
     # Run the test suite.
     # It requires the build path to be in the python search path.
@@ -16990,7 +16992,9 @@ in {
       sed -i 's@python@${python.interpreter}@' .testr.conf
     '';
 
-    buildInputs = with self; [ pbr testtools testrepository mock ];
+    doCheck = !isPy3k;
+    buildInputs = if isPy3k then [] else
+                  (with self; [ pbr testtools testrepository mock ]);
     propagatedBuildInputs = with self; [ six requests ];
   };
 
@@ -22588,7 +22592,7 @@ in {
     disabled = isPyPy || isPy26 || isPy27;
 
     checkPhase = ''
-    ${python.interpreter} test/*.py                                         #*/
+      ${python.interpreter} test/*.py                                    #*/
     '';
     meta = {
       description = "Simple and extensible IRC bot";
@@ -22915,7 +22919,7 @@ in {
     propagatedBuildInputs = with self; [ pillow blessings ];
 
     # fails with obscure error
-    doCheck = !isPy3k;
+    doCheck = !isPy3k && !stdenv.isDarwin;
 
     meta = {
       maintainers = with maintainers; [ domenkozar ];
@@ -24607,7 +24611,7 @@ in {
       description = "Twitter library for python";
       license = licenses.mit;
       maintainers = with maintainers; [ garbas ];
-      platforms = platforms.linux;
+      platforms = platforms.unix;
     };
   });
 
@@ -28035,12 +28039,11 @@ EOF
   };
 
   datadiff = buildPythonPackage rec {
-    name = "datadiff-1.1.6";
-    disabled = ! isPy27;
+    name = "datadiff-2.0.0";
 
     src = pkgs.fetchurl {
-      url = "mirror://pypi/d/datadiff/datadiff-1.1.6.zip";
-      sha256 = "f1402701063998f6a70609789aae8dc05703f3ad0a34882f6199653654c55543";
+      url = "https://pypi.python.org/packages/87/72/74d5c3d9b4574d3df45f61894aa28344b22f4b059d192cc3753c112f62f0/datadiff-2.0.0.tar.gz";
+      sha256 = "1a6ai5p07lzq04hxnzn36b49m4sz8ajplyrfxr3m5plnm109812l";
     };
 
     buildInputs = with self; [ nose ];

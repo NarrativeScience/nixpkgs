@@ -78,8 +78,8 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled" "checkInputs"
     # Check if we have two packages with the same name in the closure and fail.
     # If this happens, something went wrong with the dependencies specs.
     # Intentionally kept in a subdirectory, see catch_conflicts/README.md.
-    ${python.interpreter} ${./catch_conflicts}/catch_conflicts.py
-  '' + attrs.postFixup or '''';
+    ${python.interpreter} < ${./catch_conflicts}/catch_conflicts.py
+  '' + attrs.postFixup or "";
 
   passthru = {
     inherit python; # The python interpreter

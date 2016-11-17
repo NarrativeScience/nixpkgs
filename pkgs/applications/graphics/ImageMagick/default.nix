@@ -2,7 +2,13 @@
 , bzip2, zlib, libX11, libXext, libXt, fontconfig, freetype, ghostscript, libjpeg
 , lcms2, openexr, libpng, librsvg, libtiff, libxml2, openjpeg, libwebp
 , ApplicationServices
-, buildPlatform, hostPlatform
+, hostPlatform
+  # Freeze version on mingw so we don't need to port the patch too often.
+  # FIXME: This version has multiple security vulnerabilities
+, version ? if (stdenv.cross.libc or null) == "msvcrt"
+            then "6.9.2-0" else "6.9.6-2"
+# Set to true if you want a single-output derivation.
+, binOnly ? false
 }:
 
 let
@@ -12,28 +18,40 @@ let
     else if stdenv.system == "armv7l-linux" then "armv7l"
     else throw "ImageMagick is not supported on this platform.";
 
-  cfg = {
-    version = "6.9.8-10";
-    sha256 = "040qs7nwcm84bjd9wryvd58zqfykbmn3y3qfc90lnldww7v6ihlg";
-    patches = [];
-  }
-    # Freeze version on mingw so we don't need to port the patch too often.
-    # FIXME: This version has multiple security vulnerabilities
-    // lib.optionalAttrs (hostPlatform.isMinGW) {
-        version = "6.9.2-0";
-        sha256 = "17ir8bw1j7g7srqmsz3rx780sgnc21zfn0kwyj78iazrywldx8h7";
-        patches = [(fetchpatch {
-          name = "mingw-build.patch";
-          url = "https://raw.githubusercontent.com/Alexpux/MINGW-packages/"
-            + "01ca03b2a4ef/mingw-w64-imagemagick/002-build-fixes.patch";
-          sha256 = "1pypszlcx2sf7wfi4p37w1y58ck2r8cd5b2wrrwr9rh87p7fy1c0";
-        })];
-      };
+  cfgs = {
+    "6.9.6-2" = {
+      sha256 = "139h9lycxw3lszn052m34xm0rqyanin4nb529vxjcrkkzqilh91r";
+      patches = [];
+    };
+    "6.9.2-0" = {
+      sha256 = "17ir8bw1j7g7srqmsz3rx780sgnc21zfn0kwyj78iazrywldx8h7";
+      patches = [(fetchpatch {
+        name = "mingw-build.patch";
+        url = "https://raw.githubusercontent.com/Alexpux/MINGW-packages/"
+          + "01ca03b2a4ef/mingw-w64-imagemagick/002-build-fixes.patch";
+        sha256 = "1pypszlcx2sf7wfi4p37w1y58ck2r8cd5b2wrrwr9rh87p7fy1c0";
+      })];
+    };
+    "6.9.7-0" = {
+      sha256 = "0c6ff1am2mhc0dc26h50l78yx6acwqymwpwgkxgx69cb6jfpwrdx";
+      patches = [];
+    };
+    "7.0.3-7" = {
+      sha256 = "1mvi8nm12134jn2ccr10aviacqp99q2wv9rj47csw9ik7brrj2ql";
+      patches = [];
+    };
+    "7.0.4-7" = {
+      sha256 = "119pkwhp0r1f40vwr9gz41plm9035kr3mxj4gydfkpiswnksa8n4";
+      patches = [];
+    };
+  };
+  cfg = cfgs."${version}" or (throw "No info recorded for version ${version}");
+  atleast7 = stdenv.lib.versionAtLeast version "7";
 in
 
 stdenv.mkDerivation rec {
   name = "imagemagick-${version}";
-  inherit (cfg) version;
+  inherit version;
 
   src = fetchurl {
     urls = [
@@ -45,9 +63,10 @@ stdenv.mkDerivation rec {
     inherit (cfg) sha256;
   };
 
-  patches = [ ./imagetragick.patch ] ++ cfg.patches;
+  patches = cfg.patches;
 
-  outputs = [ "out" "dev" "doc" ]; # bin/ isn't really big
+  # bin/ isn't really big
+  outputs = if binOnly then ["out"] else [ "out" "dev" "doc" ];
   outputMan = "out"; # it's tiny
 
   enableParallelBuilding = true;
@@ -80,7 +99,7 @@ stdenv.mkDerivation rec {
       [ libX11 libXext libXt libwebp ]
     ;
 
-  postInstall = ''
+  postInstall = lib.optionalString (!binOnly) ''
     (cd "$dev/include" && ln -s ImageMagick* ImageMagick)
     moveToOutput "bin/*-config" "$dev"
     moveToOutput "lib/ImageMagick-*/config-Q16" "$dev" # includes configure params

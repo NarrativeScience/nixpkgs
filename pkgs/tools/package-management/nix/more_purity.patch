@@ -1,0 +1,20 @@
+--- a/scripts/nix-build.in
++++ b/scripts/nix-build.in
+@@ -289,7 +289,7 @@ foreach my $expr (@exprs) {
+         writeFile(
+             $rcfile,
+             "rm -rf '$tmpDir'; " .
+-            '[ -n "$PS1" ] && [ -e ~/.bashrc ] && source ~/.bashrc; ' .
++            ($pure ? '' : '[ -n "$PS1" ] && [ -e ~/.bashrc ] && source ~/.bashrc; ') .
+             ($pure ? '' : 'p=$PATH; ' ) .
+             'dontAddDisableDepTrack=1; ' .
+             '[ -e $stdenv/setup ] && source $stdenv/setup; ' .
+@@ -297,7 +297,7 @@ foreach my $expr (@exprs) {
+             'set +e; ' .
+             '[ -n "$PS1" ] && PS1="\n\[\033[1;32m\][nix-shell:\w]$\[\033[0m\] "; ' .
+             'if [ "$(type -t runHook)" = function ]; then runHook shellHook; fi; ' .
+-            'unset NIX_ENFORCE_PURITY; ' .
++            ($pure ? '' : 'unset NIX_ENFORCE_PURITY; ') .
+             'unset NIX_INDENT_MAKE; ' .
+             'shopt -u nullglob; ' .
+             'unset TZ; ' . (defined $ENV{'TZ'} ? "export TZ='${ENV{'TZ'}}'; " : '') .

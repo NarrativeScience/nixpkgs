@@ -4872,7 +4872,7 @@ in {
 
   pytest_29 = self.pytest_27.override rec {
     name = "pytest-2.9.2";
-
+    doCheck = false;
     src = pkgs.fetchurl {
       url = "mirror://pypi/p/pytest/${name}.tar.gz";
       sha256 = "1n6igbc1b138wx1q5gca4pqw1j6nsyicfxds5n0b5989kaxqmh8j";

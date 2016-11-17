@@ -31,21 +31,60 @@ let
   # runtime; otherwise we can't and we need to reboot.
   passthru.interfaceVersion = 2;
 
+  # Useful tool to check syntax of a config file. Upstart needs a dbus
+  # session, so this script wraps one up.
+  #
+  # See: http://mwhiteley.com/scripts/2012/12/11/dbus-init-checkconf.html
+  passthru.check-config = writeScript "upstart-check-config" ''
+    #!${stdenv.shell}
+
+    set -o errexit
+    set -o nounset
+
+    export PATH=${makeBinPath [dbus.out upstart]}:$PATH
+
+    if [[ $# -ne 1 ]]
+    then
+      echo "Usage: $0 upstart-conf-file" >&2
+      exit 1
+    fi
+    config=$1 && shift
+
+    dbus_pid_file=$(mktemp)
+    exec 4<> $dbus_pid_file
+
+    dbus_add_file=$(mktemp)
+    exec 6<> $dbus_add_file
+
+    dbus-daemon --fork --print-pid 4 --print-address 6 --session
+
+    function clean {
+      dbus_pid=$(cat $dbus_pid_file)
+      if [[ -n $dbus_pid ]]; then
+        kill $dbus_pid
+      fi
+      rm -f $dbus_pid_file $dbus_add_file
+    }
+    trap "{ clean; }" EXIT
+
+    export DBUS_SESSION_BUS_ADDRESS=$(cat $dbus_add_file)
+
+    init-checkconf $config
+  '';
+
+
+
   postInstall =
     ''
       t=$out/etc/bash_completion.d
       mkdir -p $t
       cp ${./upstart-bash-completion} $t/upstart
 
-      # Patch some binaries to refer to the correct binary location.
-      sed -i "s,/sbin/init,$out/bin/init,g" $out/bin/init-checkconf
-      sed -i "s,initctl,$out/bin/initctl," $out/bin/initctl2dot
-
-      # Add some missing executable permissions, and wrap binaries.
-      chmod +x $out/bin/init-checkconf $out/bin/init-checkconf
+      chmod +x $out/bin/init-checkconf
+      sed -i "s,/sbin,$out/bin,g" $out/bin/init-checkconf
       wrapProgram $out/bin/init-checkconf \
-        --prefix PATH : $out/bin:${makeBinPath [utillinux dbus]}
-      wrapProgram $out/bin/initctl2dot --prefix PATH : $out/bin
+        --prefix PATH : ${makeBinPath [utillinux dbus]}
+      chmod +x $out/bin/initctl2dot
     '';
 
   meta = {

@@ -135,7 +135,7 @@ everything = stdenv.mkDerivation (common // {
     "-DINSTALL_DOCDIR=share/doc/mysql"
     "-DINSTALL_SHAREDIR=share/mysql"
 
-    "-DENABLED_LOCAL_INFILE=ON"
+    "-DENABLED_LOCAL_INFILE=OFF"
     "-DWITH_READLINE=ON"
     "-DWITH_EXTRA_CHARSETS=complex"
     "-DWITH_EMBEDDED_SERVER=ON"

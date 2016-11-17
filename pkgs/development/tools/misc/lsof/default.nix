@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, ncurses }:
+{ stdenv, fetchurl, ncurses, which }:
 
 let dialect = with stdenv.lib; last (splitString "-" stdenv.system); in
 
@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
   name = "lsof-${version}";
   version = "4.89";
 
-  buildInputs = [ ncurses ];
+  buildInputs = [ ncurses which ];
 
   src = fetchurl {
     urls =

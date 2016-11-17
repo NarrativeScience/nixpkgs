@@ -78,11 +78,18 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
 
   postFixup = ''
     wrapPythonPrograms
-  '' + lib.optionalString catchConflicts ''
-    # check if we have two packages with the same name in closure and fail
-    # this shouldn't happen, something went wrong with dependencies specs
-    ${python.interpreter} ${./catch_conflicts.py}
-  '' + attrs.postFixup or '''';
+    ${attrs.postFixup or ""}
+  '';
+
+  preConfigure =
+    # Check if we have two packages with the same name in closure and
+    # fail this shouldn't happen, something went wrong with dependencies
+    # specs.  For some strange reason the execution of this file takes a
+    # _lot_ longer when run directly from the nix store, so instead we
+    # copy it.
+    lib.optionalString catchConflicts ''
+      ${python.interpreter} < ${./catch_conflicts.py}
+    '' + (attrs.preConfigure or "");
 
   passthru = {
     inherit python; # The python interpreter
@@ -98,5 +105,3 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
     isBuildPythonPackage = python.meta.platforms;
   };
 })
-
-

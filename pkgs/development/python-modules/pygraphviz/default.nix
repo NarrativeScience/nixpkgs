@@ -1,5 +1,5 @@
 { stdenv, buildPythonPackage, fetchPypi, graphviz
-, pkgconfig, doctest-ignore-unicode, mock, nose }:
+, pkgconfig, doctest-ignore-unicode, mock, nose}:
 
 buildPythonPackage rec {
   name = "${pname}-${version}";

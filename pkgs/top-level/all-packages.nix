@@ -7528,7 +7528,7 @@ with pkgs;
 
   gnome_doc_utils = callPackage ../development/tools/documentation/gnome-doc-utils {};
 
-  gnum4 = callPackage ../development/tools/misc/gnum4 { };
+  gnum4 = callPackage ../development/tools/misc/gnum4 {};
 
   gnumake382 = callPackage ../development/tools/build-managers/gnumake/3.82 { };
   gnumake3 = gnumake382;
@@ -13392,6 +13392,8 @@ with pkgs;
     utillinux = utillinuxMinimal; # break the cyclic dependency
   };
 
+  systemd-linter = callPackage ../tools/misc/systemd-linter {};
+
   # standalone cryptsetup generator for systemd
   systemd-cryptsetup-generator = callPackage ../os-specific/linux/systemd/cryptsetup-generator.nix { };
 
@@ -15607,6 +15609,11 @@ with pkgs;
     openjpeg = null;
     libwebp = null;
   };
+
+  # imagemagick7 = imagemagickBig.override {
+  #   version = "7.0.3-7";
+  #   binOnly = true;
+  # };
 
   imagemagick = imagemagickBig.override {
     ghostscript = null;
@@ -19708,10 +19715,10 @@ with pkgs;
 
   mynewt-newt = callPackage ../tools/package-management/mynewt-newt { };
 
-  inherit (callPackages ../tools/package-management/nix {
-      storeDir = config.nix.storeDir or "/nix/store";
-      stateDir = config.nix.stateDir or "/nix/var";
-      })
+  inherit (with builtins; callPackages ../tools/package-management/nix {
+    storeDir = config.nix.storeDir or builtins.storeDir;
+    stateDir = config.nix.stateDir or (dirOf builtins.storeDir + "/var");
+    })
     nix
     nixStable
     nixUnstable;

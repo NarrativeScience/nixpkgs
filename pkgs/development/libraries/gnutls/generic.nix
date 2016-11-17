@@ -52,7 +52,9 @@ stdenv.mkDerivation {
 
   propagatedBuildInputs = [ nettle ];
 
-  inherit doCheck;
+  # XXX: Gnulib's `test-select' fails on FreeBSD:
+  # http://hydra.nixos.org/build/2962084/nixlog/1/raw .
+  doCheck = doCheck && !stdenv.isFreeBSD && !stdenv.isDarwin && lib.versionAtLeast version "3.4";
 
   # Fixup broken libtool and pkgconfig files
   preFixup = lib.optionalString (!stdenv.isDarwin) ''

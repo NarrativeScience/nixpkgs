@@ -48,7 +48,20 @@ callPackage ./common.nix { inherit stdenv; } {
       fi
 
       echo SUPPORTED-LOCALES='${toString locales}' > ../glibc-2*/localedata/SUPPORTED
+    '' +
+    # Dirty hack to get around an error which totally stumps me. For
+    # some reason the builder complains about being unable to find the
+    # directory below, though I can't figure out why. It seems to be
+    # deterministic, and possibly determined by a hash of upstream
+    # derivations, so if you get an error like
+    # aa_DJ.UTF-8...cannot create temporary file: <SOME_PATH>/locale-archive.o58HG7: No such file or directory
+    # Then update the hash below to create the directory.
+    ''
+      mkdir -p "$TMPDIR$NIX_STORE/1ry7b4wksc6kmxqqw064aan1fi20gbi2-glibc-2.25/lib/locale"
     '' + ''
+      set -x
+      pwd
+      ls
       make localedata/install-locales \
           localedir=$out/lib/locale \
     '';

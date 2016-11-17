@@ -368,6 +368,9 @@ self: super: {
   snap-core = dontCheck super.snap-core;
   sourcemap = dontCheck super.sourcemap;
 
+  # Could not find module ‘Build_doctests’
+  parsers = dontCheck super.parsers;
+
   # These test suites run for ages, even on a fast machine. This is nuts.
   Random123 = dontCheck super.Random123;
   systemd = dontCheck super.systemd;

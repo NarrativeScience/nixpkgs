@@ -1,14 +1,14 @@
-{lib, fetchurl, python, buildPythonPackage, isPyPy, gfortran, nose, numpy}:
+{lib, fetchurl, python, buildPythonPackage, isPyPy, gfortran, nose, numpy
+, version ? "0.19.0"
+, src ? fetchurl {
+    url = "mirror://pypi/s/scipy/scipy-${version}.zip";
+    sha256 = "4190d34bf9a09626cd42100bbb12e3d96b2daf1a8a3244e991263eb693732122";
+}}:
 
 buildPythonPackage rec {
   pname = "scipy";
-  version = "0.19.0";
+  inherit version src;
   name = "${pname}-${version}";
-
-  src = fetchurl {
-    url = "mirror://pypi/s/scipy/scipy-${version}.zip";
-    sha256 = "4190d34bf9a09626cd42100bbb12e3d96b2daf1a8a3244e991263eb693732122";
-  };
 
   buildInputs = [ gfortran nose numpy.blas ];
   propagatedBuildInputs = [ numpy ];

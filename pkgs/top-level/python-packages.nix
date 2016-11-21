@@ -3000,9 +3000,9 @@ in {
     checkPhase = ''
       runHook preCheck
       # This method is not in mock. It might have appeared in some versions.
-      # sed -i 's/action.assert_called_once()/self.assertEqual(action.call_count, 1)/' \
-      #   tests/unit/resources/test_factory.py
-      # nosetests -d tests/unit --verbose
+      sed -i 's/action.assert_called_once()/self.assertEqual(action.call_count, 1)/' \
+        tests/unit/resources/test_factory.py
+      nosetests -d tests/unit --verbose
       runHook postCheck
     '';
 
@@ -6089,6 +6089,10 @@ in {
 
     # Version conflict
     doCheck = false;
+
+    buildInputs = optional stdenv.isLinux pkgs.glibcLocales;
+    LANG = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
 
     meta = {
       description = "An API client for docker written in Python";

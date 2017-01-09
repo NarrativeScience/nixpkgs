@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
   version = "1.18.14";
 
   src = fetchurl {
-    url = "mirror://debian/pool/main/d/dpkg/dpkg_${version}.tar.xz";
+    url = "http://download.openpkg.org/components/cache/dpkg/dpkg_${version}.tar.xz";
     sha256 = "0njd8pdq1vx70sjlgymi79lijg05fmd8vxnqndzhjjb0a8cf920p";
   };
 

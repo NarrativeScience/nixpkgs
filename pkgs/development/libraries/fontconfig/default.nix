@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchpatch, pkgconfig, freetype, expat, libxslt, dejavu_fonts
+{ lib, stdenv, fetchurl, fetchpatch, pkgconfig, freetype, expat, libxslt, dejavu_fonts
 , substituteAll }:
 
 /** Font configuration scheme
@@ -24,10 +24,10 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
-    (substituteAll {
+    (lib.optional (lib.pathExists /etc/nixos) (substituteAll {
       src = ./config-compat.patch;
       inherit configVersion;
-    })
+    }))
   ];
 
   outputs = [ "bin" "dev" "lib" "out" ]; # $out contains all the config

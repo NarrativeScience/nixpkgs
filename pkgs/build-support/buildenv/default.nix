@@ -32,6 +32,9 @@
 , # Root the result in directory "$out${extraPrefix}", e.g. "/share".
   extraPrefix ? ""
 
+  # Shell commands to run before building the symlink tree.
+, preBuild ? ""
+
 , # Shell commands to run after building the symlink tree.
   postBuild ? ""
 
@@ -68,7 +71,7 @@ runCommand name
     # XXX: The size is somewhat arbitrary
     passAsFile = if builtins.stringLength pkgs >= 128*1024 then [ "pkgs" ] else null;
   })
-  ''
+  (preBuild + ''
     ${perl}/bin/perl -w ${./builder.pl}
     eval "$postBuild"
-  ''
+  '')

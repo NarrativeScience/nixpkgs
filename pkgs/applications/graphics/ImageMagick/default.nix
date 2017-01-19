@@ -30,8 +30,8 @@ let
         sha256 = "1pypszlcx2sf7wfi4p37w1y58ck2r8cd5b2wrrwr9rh87p7fy1c0";
       })];
     };
-    "7.0.3-7" = {
-      sha256 = "1mvi8nm12134jn2ccr10aviacqp99q2wv9rj47csw9ik7brrj2ql";
+    "7.0.3-10" = {
+      sha256 = "0yp9h7hfv6lv8vqipd9yh6zm4c2zyvrjall0nzyd3x8ksgxdgwnr";
       patches = [];
     };
   };

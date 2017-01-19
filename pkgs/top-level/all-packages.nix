@@ -13343,7 +13343,7 @@ in
   };
 
   imagemagick7 = imagemagickBig.override {
-    version = "7.0.3-7";
+    version = "7.0.3-10";
     binOnly = true;
   };
 

@@ -6176,10 +6176,6 @@ in {
       sha256 = "05f49f6hnl7npmi7kigg0ibqk8s3fhzx1ivvz1kqvlv4ay3paajc";
     };
 
-    buildInputs = [ pkgs.glibcLocales ];
-
-    LC_ALL="en_US.UTF-8";
-
     propagatedBuildInputs = with self; [
       six
       requests2
@@ -12233,11 +12229,7 @@ in {
 
   google_apputils = buildPythonPackage rec {
     name = "google-apputils-0.4.1";
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
-
-=======
     dontStrip = true;
->>>>>>> getting stuff working off of recent nixpkgs checkout
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/google-apputils/${name}.tar.gz";
       sha256 = "1sxsm5q9vr44qzynj8l7p3l7ffb0zl1jdqhmmzmalkx941nbnj1b";
@@ -14637,7 +14629,6 @@ in {
     };
   };
 
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
   h2 = buildPythonPackage rec {
     name = "h2-${version}";
     version = "2.5.1";
@@ -14672,8 +14663,6 @@ in {
     };
   };
 
-=======
->>>>>>> getting stuff working off of recent nixpkgs checkout
   mock = buildPythonPackage (rec {
     name = "mock-2.0.0";
 
@@ -16022,64 +16011,10 @@ in {
     };
   };
 
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
   numba = callPackage ../development/python-modules/numba { };
 
   numexpr = buildPythonPackage rec {
     version = "2.6.1";
-=======
-  numba = buildPythonPackage rec {
-    version = "0.27.0";
-    name = "numba-${version}";
-
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/n/numba/${name}.tar.gz";
-      sha256 = "5fc8069cdc839b8b44ac6c54260902f60cbd77bd027b20999970a81cce7008ba";
-    };
-
-    NIX_CFLAGS_COMPILE = stdenv.lib.optionalString stdenv.isDarwin "-I${pkgs.libcxx}/include/c++/v1";
-
-    propagatedBuildInputs = with self; [numpy llvmlite argparse] ++ optional (!isPy3k) funcsigs ++ optional (isPy27 || isPy33) singledispatch;
-    # Future work: add Cuda support.
-    #propagatedBuildInputs = with self; [numpy llvmlite argparse pkgs.cudatoolkit6];
-    #buildPhase = ''
-    #  export NUMBAPRO_CUDA_DRIVER=
-    #  export NUMBAPRO_NVVM=${pkgs.cudatoolkit6}
-    #  export NUMBAPRO_LIBDEVICE=
-    #'';
-
-    # Copy test script into $out and run the test suite.
-    checkPhase = ''
-      cp runtests.py $out/${python.sitePackages}/numba/runtests.py
-      ${python.interpreter} $out/${python.sitePackages}/numba/runtests.py
-    '';
-    # ImportError: cannot import name '_typeconv'
-    doCheck = false;
-
-    meta = {
-      homepage = http://numba.pydata.org/;
-      license = licenses.bsd2;
-      description = "Compiling Python code using LLVM";
-      maintainers = with maintainers; [ fridh ];
-    };
-  };
-  # numexpr-darwin-deps is used to bring some introspection utilities
-  # into scope on MacOS that numexpr uses. It prevents some fairly
-  # inconsequential (but annoying) errors.
-  numexpr = let numexpr-darwin-deps = stdenv.mkDerivation {
-    name = "numexpr-darwin-deps";
-    version = "0.0.0";
-    buildCommand = ''
-      mkdir -p $out/bin
-      ln -s /usr/bin/arch $out/bin/arch
-      ln -s /usr/bin/machine $out/bin/machine
-      ln -s /usr/sbin/sysctl $out/bin/sysctl
-    '';
-    meta.platforms = platforms.darwin;
-  };
-  in buildPythonPackage rec {
-    version = "2.5.2";
->>>>>>> getting stuff working off of recent nixpkgs checkout
     name = "numexpr-${version}";
 
     src = pkgs.fetchurl {
@@ -16087,15 +16022,8 @@ in {
       sha256 = "db2ee72f277b23c82d204189290ea4b792f9bd5b9d67744b045f8c2a8e929a06";
     };
 
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
-    propagatedBuildInputs = with self; [ numpy ];
-=======
-    # Tests fail with python 3. https://github.com/pydata/numexpr/issues/177
-    # doCheck = !isPy3k;
-
     propagatedBuildInputs = with self; [ numpy ]
       ++ stdenv.lib.optional stdenv.isDarwin numexpr-darwin-deps;
->>>>>>> getting stuff working off of recent nixpkgs checkout
 
     # Run the test suite.
     # It requires the build path to be in the python search path.
@@ -19267,7 +19195,6 @@ in {
       cd python
     '';
 
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
     preConfigure = optionalString (versionAtLeast protobuf.version "2.6.0") ''
       export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
       export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
@@ -19280,16 +19207,6 @@ in {
     checkPhase = ''
       runHook preCheck
     '' + (if versionAtLeast protobuf.version "2.6.0" then ''
-=======
-    preConfigure = optionalString (atLeast2 && !atLeast3) ''
-      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
-      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
-    '';
-
-    checkPhase = if atLeast3 then ''
-      nosetests google/protobuf/internal
-    '' else if atLeast2 then ''
->>>>>>> getting stuff working off of recent nixpkgs checkout
       ${python.executable} setup.py google_test --cpp_implementation
       echo "sanity checking the C extension . . ."
       echo "import google.protobuf.descriptor" | ${python.executable}
@@ -20116,7 +20033,6 @@ in {
 
     buildInputs = [ pkgs.libev ];
 
-<<<<<<< 129c4ebfedf5b9a4914533716fbec6ec24c5fdf8
     libEvSharedLibrary =
       if !stdenv.isDarwin
       then "${pkgs.libev}/lib/libev.so.4"
@@ -20125,13 +20041,6 @@ in {
     postPatch = ''
       test -f "${libEvSharedLibrary}" || { echo "ERROR: File ${libEvSharedLibrary} does not exist, please fix nix expression for pyev"; exit 1; }
       sed -i -e "s|libev_dll_name = find_library(\"ev\")|libev_dll_name = \"${libEvSharedLibrary}\"|" setup.py
-=======
-    postPatch = let
-      libev_so = if stdenv.isDarwin then "${pkgs.libev}/lib/libev.4.dylib" else "${pkgs.libev}/lib/libev.so.4";
-    in ''
-      test -f "${libev_so}" || { echo "ERROR: File ${libev_so} does not exist, please fix nix expression for pyev"; exit 1; }
-      sed -i -e "s|libev_dll_name = find_library(\"ev\")|libev_dll_name = \"${libev_so}\"|" setup.py
->>>>>>> getting stuff working off of recent nixpkgs checkout
     '';
 
     meta = {

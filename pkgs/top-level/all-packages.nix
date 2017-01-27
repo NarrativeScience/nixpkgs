@@ -13720,10 +13720,10 @@ with pkgs;
     libwebp = null;
   };
 
-  imagemagick7 = imagemagickBig.override {
-    version = "7.0.3-7";
-    binOnly = true;
-  };
+  # imagemagick7 = imagemagickBig.override {
+  #   version = "7.0.3-7";
+  #   binOnly = true;
+  # };
 
   imagemagick = imagemagickBig.override {
     ghostscript = null;
@@ -17551,9 +17551,9 @@ with pkgs;
   };
 
   inherit (with builtins; callPackages ../tools/package-management/nix {
-      storeDir = config.nix.storeDir or storeDir;
-      stateDir = config.nix.stateDir or dirOf storeDir + "/var";
-      })
+    storeDir = config.nix.storeDir or storeDir;
+    stateDir = config.nix.stateDir or (dirOf storeDir + "/var");
+    })
     nix
     nixStable
     nixUnstable;

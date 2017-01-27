@@ -1,6 +1,6 @@
 { lib, stdenv, fetchurl, perl, curl, bzip2, sqlite, openssl ? null, xz
 , pkgconfig, boehmgc, perlPackages, libsodium, bashInteractive
-, autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl
+, autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl, aws-sdk-cpp, fetchFromGitHub
 , storeDir ? builtins.storeDir
 , stateDir ? "${builtins.dirOf storeDir}/var"
 , sysConfDir ? "/etc"

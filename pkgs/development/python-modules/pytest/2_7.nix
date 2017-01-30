@@ -1,4 +1,4 @@
-{ stdenv, pkgs, buildPythonPackage, fetchurl, isPy26, argparse, py, selenium }:
+{ stdenv, pkgs, buildPythonPackage, fetchurl, isPy26, argparse, py, selenium, doCheck ? false }:
 buildPythonPackage rec {
   name = "pytest-2.7.3";
 
@@ -7,8 +7,7 @@ buildPythonPackage rec {
     sha256 = "1z4yi986f9n0p8qmzmn21m21m8j1x78hk3505f89baqm6pdw7afm";
   };
 
-  # Disabled temporarily because of Hydra issue with namespaces
-  doCheck = false;
+  inherit doCheck;
 
   preCheck = ''
     # don't test bash builtins

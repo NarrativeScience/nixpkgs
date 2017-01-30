@@ -1,4 +1,4 @@
-{ stdenv, buildPythonPackage, fetchurl, isPy26, argparse, hypothesis, py }:
+{ stdenv, buildPythonPackage, fetchurl, isPy26, argparse, hypothesis, py, doCheck ? true }:
 buildPythonPackage rec {
   name = "pytest-${version}";
   version = "3.0.6";
@@ -7,6 +7,7 @@ buildPythonPackage rec {
     # don't test bash builtins
     rm testing/test_argcomplete.py
   '';
+  inherit doCheck;
 
   src = fetchurl {
     url = "mirror://pypi/p/pytest/${name}.tar.gz";

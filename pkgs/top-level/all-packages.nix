@@ -11502,6 +11502,8 @@ in
 
   upstart = callPackage ../os-specific/linux/upstart { };
 
+  upstart-check-config = callPackage ../os-specific/linux/upstart/check-config.nix {};
+
   usbutils = callPackage ../os-specific/linux/usbutils { };
 
   usermount = callPackage ../os-specific/linux/usermount { };

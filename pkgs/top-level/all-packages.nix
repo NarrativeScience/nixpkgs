@@ -13345,7 +13345,7 @@ in
   };
 
   imagemagick7 = imagemagickBig.override {
-    version = "7.0.3-7";
+    version = "7.0.4-7";
     binOnly = true;
   };
 

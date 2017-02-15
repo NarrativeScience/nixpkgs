@@ -6796,7 +6796,7 @@ in {
       sha256 = "0nikc05iz1fx2c9pvxrhrs819cpmg566azm99450yq2m8qmp1cpd";
     };
     disabled = isPy3k;
-    doCheck = (!isPyPy);  # https://github.com/fabric/fabric/issues/11891
+    doCheck = false; # requires networking
     propagatedBuildInputs = with self; [ paramiko pycrypto ];
     buildInputs = with self; [ fudge_9 nose ];
   };

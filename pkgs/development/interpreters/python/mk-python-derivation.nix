@@ -6,6 +6,7 @@
 , setuptools
 , unzip
 , ensureNewerSourcesHook
+, pkgs
 }:
 
 { name
@@ -69,12 +70,17 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
   doCheck = false;
   doInstallCheck = doCheck;
 
-  postFixup = ''
+  postFixup = let
+    conflictCatcher = pkgs.writeScriptBin "catch_conflicts" ''
+      #!${python.interpreter}
+      ${builtins.readFile ./catch_conflicts.py}
+    '';
+  in ''
     wrapPythonPrograms
   '' + lib.optionalString catchConflicts ''
     # check if we have two packages with the same name in closure and fail
     # this shouldn't happen, something went wrong with dependencies specs
-    ${python.interpreter} ${./catch_conflicts.py}
+    ${conflictCatcher}/bin/catch_conflicts
   '' + attrs.postFixup or '''';
 
   passthru = {
@@ -91,5 +97,3 @@ python.stdenv.mkDerivation (builtins.removeAttrs attrs ["disabled"] // {
     isBuildPythonPackage = python.meta.platforms;
   };
 })
-
-

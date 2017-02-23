@@ -10204,6 +10204,7 @@ in
   };
 
   mongodb248 = callPackage ../servers/nosql/mongodb/2.4.8.nix { };
+  mongodb_2-6-11 = callPackage ../servers/nosql/mongodb/2.6.11.nix { };
 
   riak = callPackage ../servers/nosql/riak/2.1.1.nix { };
 

@@ -34,6 +34,7 @@ let
       patch -p0 -i ${./hex_hash.patch}
       patch -p0 -i ${./disable_hash_check.patch}
       patch -p0 -i ${./disable-hash-unit-test.patch}
+      patch -p1 -i ${./sigterm.patch}
       sed -i 's|$ENV{NIX_BUILD_SHELL} // "bash"|"${bashInteractive}/bin/bash"|' \
         scripts/nix-build.in
     '';

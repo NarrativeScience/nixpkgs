@@ -1,0 +1,77 @@
+--- a/src/libstore/build.cc
++++ b/src/libstore/build.cc
+@@ -937,7 +937,7 @@ void DerivationGoal::killChild()
+                it won't be killed, and we'll potentially lock up in
+                pid.wait().  So also send a conventional kill to the
+                child. */
+-            ::kill(-pid, SIGKILL); /* ignore the result */
++            ::kill(-pid, SIGTERM); /* ignore the result */
+             buildUser.kill();
+             pid.wait(true);
+         } else
+diff --git a/src/libutil/util.cc b/src/libutil/util.cc
+index 16d3296..95cad42 100644
+--- a/src/libutil/util.cc
++++ b/src/libutil/util.cc
+@@ -777,13 +777,13 @@ void AutoCloseDir::close()
+ 
+ 
+ Pid::Pid()
+-    : pid(-1), separatePG(false), killSignal(SIGKILL)
++    : pid(-1), separatePG(false), killSignal(SIGTERM)
+ {
+ }
+ 
+ 
+ Pid::Pid(pid_t pid)
+-    : pid(pid), separatePG(false), killSignal(SIGKILL)
++    : pid(pid), separatePG(false), killSignal(SIGTERM)
+ {
+ }
+ 
+@@ -798,7 +798,7 @@ void Pid::operator =(pid_t pid)
+ {
+     if (this->pid != pid) kill();
+     this->pid = pid;
+-    killSignal = SIGKILL; // reset signal to default
++    killSignal = SIGTERM; // reset signal to default
+ }
+ 
+ 
+@@ -813,13 +813,13 @@ void Pid::kill(bool quiet)
+     if (pid == -1 || pid == 0) return;
+ 
+     if (!quiet)
+-        printMsg(lvlError, format("killing process %1%") % pid);
++        printMsg(lvlError, format("killing process %1% with signal %2%") % pid % killSignal);
+ 
+     /* Send the requested signal to the child.  If it has its own
+        process group, send the signal to every process in the child
+        process group (which hopefully includes *all* its children). */
+     if (::kill(separatePG ? -pid : pid, killSignal) != 0)
+-        printMsg(lvlError, (SysError(format("killing process %1%") % pid).msg()));
++        printMsg(lvlError, (SysError(format("killing child process %1% with signal %2%") % pid % killSignal).msg()));
+ 
+     /* Wait until the child dies, disregarding the exit status. */
+     int status;
+@@ -891,9 +891,9 @@ void killUser(uid_t uid)
+                calling process. In the OSX libc, it's set to true,
+                which means "follow POSIX", which we don't want here
+                  */
+-            if (syscall(SYS_kill, -1, SIGKILL, false) == 0) break;
++            if (syscall(SYS_kill, -1, SIGTERM, false) == 0) break;
+ #else
+-            if (kill(-1, SIGKILL) == 0) break;
++            if (kill(-1, SIGTERM) == 0) break;
+ #endif
+             if (errno == ESRCH) break; /* no more processes */
+             if (errno != EINTR)
+@@ -939,7 +939,7 @@ pid_t startProcess(std::function<void()> fun, const ProcessOptions & options)
+         if (!options.allowVfork) _writeToStderr = 0;
+         try {
+ #if __linux__
+-            if (options.dieWithParent && prctl(PR_SET_PDEATHSIG, SIGKILL) == -1)
++            if (options.dieWithParent && prctl(PR_SET_PDEATHSIG, SIGTERM) == -1)
+                 throw SysError("setting death signal");
+ #endif
+             restoreAffinity();

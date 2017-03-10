@@ -2961,6 +2961,11 @@ in {
       sha256 = "04ywn8xszk57s87jnkv4j1hswc6ra7z811y9lawfvhvnfshrpx5d";
     };
 
+    # Fix utf-8 encoding bug on python3
+    patchPhase = if !isPy3k then "" else ''
+      sed -i "s/fp.write(self.material)/fp.write(self.material.encode('utf-8'))/" boto/ec2/keypair.py
+    '';
+
     checkPhase = ''
       ${python.interpreter} tests/test.py default
     '';

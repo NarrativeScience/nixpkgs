@@ -13835,6 +13835,7 @@ in {
     buildInputs = with self; [ python pkgs.file ];
 
     preConfigure = "cd python";
+    doCheck = false;
 
     meta = {
       description = "A Python wrapper around libmagic";

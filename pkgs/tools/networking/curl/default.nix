@@ -85,6 +85,7 @@ stdenv.mkDerivation rec {
     description = "A command line tool for transferring files with URL syntax";
     homepage    = http://curl.haxx.se/;
     maintainers = with maintainers; [ lovek323 ];
+    license = licenses.mit;
     platforms   = platforms.all;
   };
 }

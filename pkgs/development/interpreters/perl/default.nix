@@ -116,6 +116,7 @@ let
       description = "The standard implementation of the Perl 5 programmming language";
       maintainers = [ maintainers.eelco ];
       platforms = platforms.all;
+      license = stdenv.lib.licenses.gpl1Plus;
     };
   };
 

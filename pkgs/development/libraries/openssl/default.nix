@@ -104,6 +104,7 @@ let
       platforms = stdenv.lib.platforms.all;
       maintainers = [ stdenv.lib.maintainers.peti ];
       priority = 10; # resolves collision with ‘man-pages’
+      license = "https://www.openssl.org/source/license.txt";
     };
   };
 

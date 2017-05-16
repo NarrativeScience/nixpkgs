@@ -18,5 +18,6 @@ stdenv.mkDerivation rec {
     description = "A more advanced file pager than ‘more’";
     platforms = stdenv.lib.platforms.unix;
     maintainers = [ stdenv.lib.maintainers.eelco ];
+    license = stdenv.lib.licenses.mit;
   };
 }

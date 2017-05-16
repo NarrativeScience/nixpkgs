@@ -199,5 +199,6 @@ stdenv.mkDerivation rec {
     description = "A system and service manager for Linux";
     platforms = stdenv.lib.platforms.linux;
     maintainers = [ stdenv.lib.maintainers.eelco ];
+    license = stdenv.lib.licenses.lgpl2Plus;
   };
 }

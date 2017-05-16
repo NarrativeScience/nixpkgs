@@ -54,6 +54,7 @@ stdenv.mkDerivation rec {
       from it).
     '';
     maintainers = [ stdenv.lib.maintainers.mornfall ];
+    license = stdenv.lib.licenses.free;
     platforms = stdenv.lib.platforms.unix;
   };
 }

@@ -6279,6 +6279,7 @@ in
   pkgconfig = forceNativeDrv (callPackage ../development/tools/misc/pkgconfig {
     fetchurl = fetchurlBoot;
   });
+  pkg-config = pkgconfig;
   pkgconfigUpstream = lowPrio (pkgconfig.override { vanilla = true; });
 
   postiats-utilities = callPackage ../development/tools/postiats-utilities {};
@@ -7063,6 +7064,8 @@ in
   # Only supported on Linux
   glibcLocales = if stdenv.isLinux then callPackage ../development/libraries/glibc/locales.nix { } else null;
 
+  glibc-locales = glibcLocales;
+
   glibcInfo = callPackage ../development/libraries/glibc/info.nix { };
 
   glibc_multi = callPackage ../development/libraries/glibc/multi.nix {
@@ -7253,6 +7256,8 @@ in
   gdata-sharp = callPackage ../development/libraries/gdata-sharp { };
 
   gdk_pixbuf = callPackage ../development/libraries/gdk-pixbuf { };
+
+  gdk-pixbuf = gdk_pixbuf;
 
   gnome-sharp = callPackage ../development/libraries/gnome-sharp {};
 
@@ -7819,6 +7824,7 @@ in
   libgksu = callPackage ../development/libraries/libgksu { };
 
   libgpgerror = callPackage ../development/libraries/libgpg-error { };
+  libgpg-error = libgpgerror;
 
   libgphoto2 = callPackage ../development/libraries/libgphoto2 { };
 
@@ -7962,7 +7968,9 @@ in
   glibcIconv = libc: let
     inherit (builtins.parseDrvName libc.name) name version;
     libcDev = lib.getDev libc;
-  in runCommand "${name}-iconv-${version}" {} ''
+  in runCommand "${name}-iconv-${version}" {
+    meta.license = libc.meta.license;
+  } ''
     mkdir -p $out/include
     ln -sv ${libcDev}/include/iconv.h $out/include
   '';
@@ -7998,6 +8006,7 @@ in
 
   libjpeg_original = callPackage ../development/libraries/libjpeg { };
   libjpeg_turbo = callPackage ../development/libraries/libjpeg-turbo { };
+  libjpeg-turbo = libjpeg_turbo;
   libjpeg_drop = callPackage ../development/libraries/libjpeg-drop { };
   libjpeg = if stdenv.isLinux then libjpeg_turbo else libjpeg_original; # some problems, both on FreeBSD and Darwin
 
@@ -8141,6 +8150,7 @@ in
 
   libpng = callPackage ../development/libraries/libpng { };
   libpng_apng = libpng.override { apngSupport = true; };
+  libpng-apng = libpng_apng;
   libpng12 = callPackage ../development/libraries/libpng/12.nix { };
 
   libpaper = callPackage ../development/libraries/libpaper { };
@@ -8462,12 +8472,15 @@ in
     llvmPackages = llvmPackages_39;
   });
   mesa_glu =  mesaDarwinOr (callPackage ../development/libraries/mesa-glu { });
+  glu = mesa_glu;
   mesa_drivers = mesaDarwinOr (
     let mo = mesa_noglu.override {
       grsecEnabled = config.grsecurity or false;
     };
     in mo.drivers
   );
+
+  mesa-noglu = mesa_noglu;
 
   mesa = mesaDarwinOr (buildEnv {
     name = "mesa-${mesa_noglu.version}";
@@ -8731,6 +8744,7 @@ in
   osm-gps-map = callPackage ../development/libraries/osm-gps-map { };
 
   p11_kit = callPackage ../development/libraries/p11-kit { };
+  p11-kit = p11_kit;
 
   paperkey = callPackage ../tools/security/paperkey { };
 
@@ -10653,6 +10667,7 @@ in
   dstat = callPackage ../os-specific/linux/dstat { };
 
   libossp_uuid = callPackage ../development/libraries/libossp-uuid { };
+  libossp-uuid = libossp_uuid;
 
   libuuid =
     if crossSystem != null && crossSystem.config == "i586-pc-gnu"
@@ -10814,6 +10829,7 @@ in
   # -- Linux kernel expressions ------------------------------------------------
 
   linuxHeaders = linuxHeaders_4_4;
+  linux-headers = linuxHeaders;
 
   linuxHeaders24Cross = forceNativeDrv (callPackage ../os-specific/linux/kernel-headers/2.4.nix {
     cross = assert crossSystem != null; crossSystem;
@@ -11270,6 +11286,8 @@ in
 
   pam = callPackage ../os-specific/linux/pam { };
 
+  linux-pam = pam;
+
   # pam_bioapi ( see http://www.thinkwiki.org/wiki/How_to_enable_the_fingerprint_reader )
 
   pam_ccreds = callPackage ../os-specific/linux/pam_ccreds { };
@@ -11641,6 +11659,8 @@ in
     inherit (perlPackages) FontTTF;
   });
 
+  dejavu-fonts = dejavu_fonts;
+
   # solve collision for nix-env before https://github.com/NixOS/nix/pull/815
   dejavu_fontsEnv = buildEnv {
     name = "${dejavu_fonts.name}";
@@ -11761,6 +11781,7 @@ in
   liberation_ttf_from_source = callPackage ../data/fonts/redhat-liberation-fonts { };
   liberation_ttf_binary = callPackage ../data/fonts/redhat-liberation-fonts/binary.nix { };
   liberation_ttf = liberation_ttf_binary;
+  liberation-fonts = liberation_ttf;
 
   liberationsansnarrow = callPackage ../data/fonts/liberationsansnarrow { };
   liberationsansnarrow_binary = callPackage ../data/fonts/liberationsansnarrow/binary.nix { };

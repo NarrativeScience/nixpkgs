@@ -13647,7 +13647,6 @@ in {
 
   locustio = buildPythonPackage rec {
     name = "locustio-0.8a2";
-    checkPhase = "true";
     src = pkgs.fetchurl {
       url = "mirror://pypi/l/locustio/${name}.tar.gz";
       sha256 = "c9ca6fdfe6a6fb187a3d54ddf9b1518196348e8f20537f0a14ca81a264ffafa2";

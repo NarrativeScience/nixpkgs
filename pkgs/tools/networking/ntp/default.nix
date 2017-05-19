@@ -30,5 +30,6 @@ stdenv.mkDerivation rec {
     description = "An implementation of the Network Time Protocol";
     maintainers = [ stdenv.lib.maintainers.eelco ];
     platforms = stdenv.lib.platforms.linux;
+    license = stdenv.lib.licenses.mit;
   };
 }

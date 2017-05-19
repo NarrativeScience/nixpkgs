@@ -60,5 +60,6 @@ stdenv.mkDerivation {
     description = "A self-contained, serverless, zero-configuration, transactional SQL database engine";
     platforms = stdenv.lib.platforms.unix;
     maintainers = with stdenv.lib.maintainers; [ eelco np ];
+    license = stdenv.lib.licenses.mit;
   };
 }

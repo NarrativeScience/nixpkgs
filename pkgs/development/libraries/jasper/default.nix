@@ -22,5 +22,6 @@ stdenv.mkDerivation rec {
     homepage = https://www.ece.uvic.ca/~frodo/jasper/;
     description = "JPEG2000 Library";
     platforms = stdenv.lib.platforms.unix;
+    license = stdenv.lib.licenses.mit;
   };
 }

@@ -1,51 +1,21 @@
-{ lib, stdenv, fetchurl, fetchFromGitHub, perl, curl, bzip2, sqlite, openssl ? null, xz
-, pkgconfig, boehmgc, perlPackages, libsodium, aws-sdk-cpp, brotli, readline
-, autoreconfHook, autoconf-archive, bison, flex, libxml2, libxslt, docbook5, docbook5_xsl
-, libseccomp, busybox, bashInteractive
-, hostPlatform
+{ lib, stdenv, fetchurl, perl, curl, bzip2, sqlite, openssl ? null, xz
+, pkgconfig, boehmgc, perlPackages, libsodium, bashInteractive
 , storeDir ? builtins.storeDir
 , stateDir ? "${builtins.dirOf storeDir}/var"
-, confDir ? "/etc"
+, sysConfDir ? "/etc"
 }:
 
 let
 
-  sh = busybox.override {
-    useMusl = true;
-    enableStatic = true;
-    enableMinimal = true;
-    extraConfig = ''
-      CONFIG_ASH y
-      CONFIG_ASH_BUILTIN_ECHO y
-      CONFIG_ASH_BUILTIN_TEST y
-      CONFIG_ASH_OPTIMIZE_FOR_SIZE y
-    '';
-  };
-
-  common = { name, suffix ? "", src, fromGit ? false }: stdenv.mkDerivation rec {
+  common = { name, src }: stdenv.mkDerivation rec {
     inherit name src;
-    version = lib.getVersion name;
-
-    is112 = lib.versionAtLeast version "1.12pre";
-
-    VERSION_SUFFIX = lib.optionalString fromGit suffix;
 
     outputs = [ "out" "dev" "man" "doc" ];
 
-    nativeBuildInputs =
-      [ pkgconfig ]
-      ++ lib.optionals (!is112) [ perl ]
-      ++ lib.optionals fromGit [ autoreconfHook autoconf-archive bison flex libxml2 libxslt docbook5 docbook5_xsl ];
+    nativeBuildInputs = [ perl pkgconfig ];
 
     buildInputs = [ curl openssl sqlite xz ]
-      ++ lib.optional (stdenv.isLinux || stdenv.isDarwin) libsodium
-      ++ lib.optionals fromGit [ brotli readline ] # Since 1.12
-      ++ lib.optional stdenv.isLinux libseccomp
-      ++ lib.optional ((stdenv.isLinux || stdenv.isDarwin) && is112)
-          (aws-sdk-cpp.override {
-            apis = ["s3"];
-            customMemoryManagement = false;
-          });
+      ++ lib.optional (stdenv.isLinux || stdenv.isDarwin) libsodium;
 
     propagatedBuildInputs = [ boehmgc bashInteractive ];
 
@@ -59,7 +29,7 @@ let
       '';
 
     patchPhase = ''
-      patch -p1 -i ${./more_purity.patch}
+      patch -p0 -i ${./more_purity.patch}
       patch -p0 -i ${./user_pass_auth.patch}
       patch -p0 -i ${./hex_hash.patch}
       patch -p0 -i ${./disable_hash_check.patch}
@@ -69,28 +39,21 @@ let
     '';
 
     configureFlags =
-      [ "--with-store-dir=${storeDir}"
-        "--localstatedir=${stateDir}"
-        "--sysconfdir=${confDir}"
-        "--disable-init-state"
-        "--enable-gc"
-      ]
-      ++ lib.optionals (!is112) [
-        "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
-        "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
-        "--with-www-curl=${perlPackages.WWWCurl}/${perl.libPrefix}"
-      ] ++ lib.optionals (is112 && stdenv.isLinux) [
-        "--with-sandbox-shell=${sh}/bin/busybox"
-      ];
+      ''
+        --with-store-dir=${storeDir} --localstatedir=${stateDir}
+        --sysconfdir=${sysConfDir}
+        --with-dbi=${perlPackages.DBI}/${perl.libPrefix}
+        --with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}
+        --with-www-curl=${perlPackages.WWWCurl}/${perl.libPrefix}
+        --disable-init-state
+        --enable-gc
+      '';
 
     makeFlags = "profiledir=$(out)/etc/profile.d";
 
     installFlags = "sysconfdir=$(out)/etc";
 
     doInstallCheck = true;
-
-    # socket path becomes too long otherwise
-    preInstallCheck = lib.optional stdenv.isDarwin "export TMPDIR=/tmp";
 
     separateDebugInfo = stdenv.isLinux;
 
@@ -109,8 +72,8 @@ let
           --disable-init-state
           --enable-gc
         '' + stdenv.lib.optionalString (
-            hostPlatform ? nix && hostPlatform.nix ? system
-        ) ''--with-system=${hostPlatform.nix.system}'';
+            stdenv.cross ? nix && stdenv.cross.nix ? system
+        ) ''--with-system=${stdenv.cross.nix.system}'';
 
       doInstallCheck = false;
     };
@@ -130,55 +93,27 @@ let
       license = stdenv.lib.licenses.lgpl2Plus;
       maintainers = [ stdenv.lib.maintainers.eelco ];
       platforms = stdenv.lib.platforms.all;
-      outputsToInstall = [ "out" "man" ];
     };
-
-    passthru = { inherit fromGit; };
-  };
-
-  perl-bindings = { nix }: stdenv.mkDerivation {
-    name = "nix-perl-" + nix.version;
-
-    inherit (nix) src;
-
-    postUnpack = "sourceRoot=$sourceRoot/perl";
-
-    nativeBuildInputs =
-      [ perl pkgconfig curl nix libsodium ]
-      ++ lib.optionals nix.fromGit [ autoreconfHook autoconf-archive ];
-
-    configureFlags =
-      [ "--with-dbi=${perlPackages.DBI}/${perl.libPrefix}"
-        "--with-dbd-sqlite=${perlPackages.DBDSQLite}/${perl.libPrefix}"
-      ];
-
-    preConfigure = "export NIX_STATE_DIR=$TMPDIR";
-
-    preBuild = "unset NIX_INDENT_MAKE";
   };
 
 in rec {
 
   nix = nixStable;
 
-  nixStable = (common rec {
-    name = "nix-1.11.11";
+  nixStable = common rec {
+    name = "nix-1.11.4";
     src = fetchurl {
       url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "f5b9da21fb412e4c35b6e2bc771cfbf4ca44746be5d99868ff29d6e7604760e5";
+      sha256 = "937779ed2efaa3dec210250635401980acb99a6fea6d7374fbaea78231b36d34";
     };
-  }) // { perl-bindings = nixStable; };
+  };
 
-  nixUnstable = (lib.lowPrio (common rec {
-    name = "nix-1.12${suffix}";
-    suffix = "pre5413_b4b1f452";
-    src = fetchFromGitHub {
-      owner = "NixOS";
-      repo = "nix";
-      rev = "b4b1f4525f8dc8f320d666c208bff5cb36777580";
-      sha256 = "0qb18k2rp6bbg8g50754srl95dq0lr96i297856yhrx1hh1ja37z";
+  nixUnstable = lib.lowPrio (common rec {
+    name = "nix-1.12pre4523_3b81b26";
+    src = fetchurl {
+      url = "http://hydra.nixos.org/build/33598573/download/4/${name}.tar.xz";
+      sha256 = "0469zv09m85824w4vqj2ag0nciq51xvrvsys7bd5v4nrxihk9991";
     };
-    fromGit = true;
-  })) // { perl-bindings = perl-bindings { nix = nixUnstable; }; };
+  });
 
 }

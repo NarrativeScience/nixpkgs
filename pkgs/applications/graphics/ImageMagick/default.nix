@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchurl, fetchpatch, pkgconfig, libtool
+{ lib, stdenv, fetchFromGitHub, fetchpatch, pkgconfig, libtool
 , bzip2, zlib, libX11, libXext, libXt, fontconfig, freetype, ghostscript, libjpeg
 , lcms2, openexr, libpng, librsvg, libtiff, libxml2, openjpeg, libwebp
 , ApplicationServices
@@ -19,27 +19,27 @@ let
     else throw "ImageMagick is not supported on this platform.";
 
   cfgs = {
-    "6.9.6-2" = {
-      sha256 = "139h9lycxw3lszn052m34xm0rqyanin4nb529vxjcrkkzqilh91r";
-      patches = [];
-    };
-    "6.9.2-0" = {
-      sha256 = "17ir8bw1j7g7srqmsz3rx780sgnc21zfn0kwyj78iazrywldx8h7";
-      patches = [(fetchpatch {
-        name = "mingw-build.patch";
-        url = "https://raw.githubusercontent.com/Alexpux/MINGW-packages/"
-          + "01ca03b2a4ef/mingw-w64-imagemagick/002-build-fixes.patch";
-        sha256 = "1pypszlcx2sf7wfi4p37w1y58ck2r8cd5b2wrrwr9rh87p7fy1c0";
-      })];
-    };
-    "6.9.7-0" = {
-      sha256 = "0c6ff1am2mhc0dc26h50l78yx6acwqymwpwgkxgx69cb6jfpwrdx";
-      patches = [];
-    };
-    "7.0.3-7" = {
-      sha256 = "1mvi8nm12134jn2ccr10aviacqp99q2wv9rj47csw9ik7brrj2ql";
-      patches = [];
-    };
+    # "6.9.6-2" = {
+    #   sha256 = "139h9lycxw3lszn052m34xm0rqyanin4nb529vxjcrkkzqilh91r";
+    #   patches = [];
+    # };
+    # "6.9.2-0" = {
+    #   sha256 = "17ir8bw1j7g7srqmsz3rx780sgnc21zfn0kwyj78iazrywldx8h7";
+    #   patches = [(fetchpatch {
+    #     name = "mingw-build.patch";
+    #     url = "https://raw.githubusercontent.com/Alexpux/MINGW-packages/"
+    #       + "01ca03b2a4ef/mingw-w64-imagemagick/002-build-fixes.patch";
+    #     sha256 = "1pypszlcx2sf7wfi4p37w1y58ck2r8cd5b2wrrwr9rh87p7fy1c0";
+    #   })];
+    # };
+    # "6.9.7-0" = {
+    #   sha256 = "0c6ff1am2mhc0dc26h50l78yx6acwqymwpwgkxgx69cb6jfpwrdx";
+    #   patches = [];
+    # };
+    # "7.0.3-7" = {
+    #   sha256 = "1mvi8nm12134jn2ccr10aviacqp99q2wv9rj47csw9ik7brrj2ql";
+    #   patches = [];
+    # };
     "7.0.4-7" = {
       sha256 = "119pkwhp0r1f40vwr9gz41plm9035kr3mxj4gydfkpiswnksa8n4";
       patches = [];
@@ -53,13 +53,10 @@ stdenv.mkDerivation rec {
   name = "imagemagick-${version}";
   inherit version;
 
-  src = fetchurl {
-    urls = [
-      "mirror://imagemagick/releases/ImageMagick-${version}.tar.xz"
-      # the original source above removes tarballs quickly
-      "http://distfiles.macports.org/ImageMagick/ImageMagick-${version}.tar.xz"
-      "https://bintray.com/homebrew/mirror/download_file?file_path=imagemagick-${version}.tar.xz"
-    ];
+  src = fetchFromGitHub {
+    owner = "ImageMagick";
+    repo = "ImageMagick";
+    rev = version;
     inherit (cfg) sha256;
   };
 

@@ -1,10 +1,8 @@
-{ stdenv, fetchurl, fetchpatch, fixDarwinDylibNames
-, version ? "58.2"
-, sha256 ? "036shcb3f8bm1lynhlsb4kpjm9s9c2vdiir01vg216rs2l8482ib"
-}:
+{ stdenv, fetchurl, fetchpatch, fixDarwinDylibNames }:
 
 let
   pname = "icu4c";
+  version = "58.2";
 
   # this patch should no longer be needed in 58.3
   # https://bugs.gentoo.org/show_bug.cgi?id=599142#c14
@@ -20,7 +18,7 @@ stdenv.mkDerivation {
   src = fetchurl {
     url = "http://download.icu-project.org/files/${pname}/${version}/${pname}-"
       + (stdenv.lib.replaceChars ["."] ["_"] version) + "-src.tgz";
-    inherit sha256;
+    sha256 = "036shcb3f8bm1lynhlsb4kpjm9s9c2vdiir01vg216rs2l8482ib";
   };
 
   outputs = [ "out" "dev" ];

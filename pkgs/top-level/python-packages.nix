@@ -17088,6 +17088,7 @@ in {
     '';
     postPatch = ''
       substituteInPlace setup.py --replace "__builtins__.__NUMPY_SETUP__ = False" ""
+      patch -p1 < ${../development/python-modules/bottleneck/fix_tests.patch}
     '';
   };
 

@@ -12478,11 +12478,11 @@ in {
 
   lsi = buildPythonPackage rec {
     name = "lsi-${version}";
-    version = "0.2.2";
+    version = "0.4.0";
     disabled = isPy3k;
     src = pkgs.fetchurl {
       url = "mirror://pypi/l/lsi/${name}.tar.gz";
-      sha256 = "0429iilb06yhsmvj3xp6wyhfh1rp4ndxlhwrm80r97z0w7plrk94";
+      sha256 = "0dj7izkwy4a8468y2n1dyi5whg4bq81ral4kc5592bx3fsiaki5j";
     };
     propagatedBuildInputs = [
       self.colored

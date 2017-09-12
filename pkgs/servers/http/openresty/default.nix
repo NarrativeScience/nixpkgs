@@ -7,19 +7,19 @@ with stdenv.lib;
 
 stdenv.mkDerivation rec {
   name = "openresty-${version}";
-  version = "1.9.3.1";
+  version = "1.11.2.5";
 
   src = fetchurl {
-    url = "http://openresty.org/download/ngx_openresty-${version}.tar.gz";
-    sha256 = "1fw8yxjndf5gsk44l4bsixm270fxv7f5cdiwzq9ps6j3hhgx5kyv";
+    url = "http://openresty.org/download/openresty-${version}.tar.gz";
+    sha256 = "1fapss58v26pja7al83qym2w8zq92ws6ll35dxknkk8gihz21k7q";
   };
 
   buildInputs = [ openssl zlib pcre libxml2 libxslt gd geoip perl ];
 
   configureFlags = [
     "--with-pcre-jit"
+    "--with-luajit"
     "--with-http_ssl_module"
-    "--with-http_spdy_module"
     "--with-http_realip_module"
     "--with-http_addition_module"
     "--with-http_xslt_module"
@@ -41,8 +41,6 @@ stdenv.mkDerivation rec {
 
   postInstall = ''
     mv $out/nginx/sbin/nginx $out/bin
-    mv $out/luajit/bin/luajit-2.1.0-alpha $out/bin/luajit-openresty
-    ln -s $out/bin/nginx $out/bin/openresty
   '';
 
   preConfigure = ''

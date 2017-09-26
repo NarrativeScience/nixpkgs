@@ -11475,19 +11475,20 @@ in {
   };
 
   gevent = buildPythonPackage rec {
-    name = "gevent-1.1.2";
+    name = "gevent-1.2.2";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/g/gevent/${name}.tar.gz";
-      sha256 = "cb15cf73d69a2eeefed330858f09634e2c50bf46da9f9e7635730fcfb872c02c";
+      #sha256 = "cb15cf73d69a2eeefed330858f09634e2c50bf46da9f9e7635730fcfb872c02c";
+      sha256 = "0bbbjvi423y9k9xagrcsimnayaqymg6f2dj76m9z3mjpkjpci4a7";
     };
 
     # Why do we have this patch?
-    postPatch = ''
-      substituteInPlace libev/ev.c --replace \
-        "ecb_inline void ecb_unreachable (void) ecb_noreturn" \
-        "ecb_inline ecb_noreturn void ecb_unreachable (void)"
-    '';
+    # postPatch = ''
+    #   substituteInPlace libev/ev.c --replace \
+    #     "ecb_inline void ecb_unreachable (void) ecb_noreturn" \
+    #     "ecb_inline ecb_noreturn void ecb_unreachable (void)"
+    # '';
 
     buildInputs = with self; [ pkgs.libev ];
     propagatedBuildInputs = with self; optionals (!isPyPy) [ greenlet ];
@@ -13143,11 +13144,11 @@ in {
   };
 
   locustio = buildPythonPackage rec {
-    name = "locustio-0.7.2";
+    name = "locustio-0.8.1";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/l/locustio/${name}.tar.gz";
-      sha256 = "c9ca6fdfe6a6fb187a3d54ddf9b1518196348e8f20537f0a14ca81a264ffafa2";
+      sha256 = "0q8dcvzzryklzd5hdyj2ng4bggzd5sfy5qxff6q0ncqwpa3kjn34";
     };
 
     propagatedBuildInputs = [ self.msgpack self.requests self.flask self.gevent self.pyzmq ];

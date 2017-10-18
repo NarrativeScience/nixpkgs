@@ -6150,38 +6150,6 @@ in {
     };
   };
 
-  urllib3-1-22 = let
-    disabled_tests = [
-      "test_headers" "test_headerdict" "test_can_validate_ip_san" "test_delayed_body_read_timeout"
-      "test_timeout_errors_cause_retries" "test_select_multiple_interrupts_with_event"
-    ];
-  in buildPythonPackage rec {
-    pname = "urllib3";
-    version = "1.22";
-    name = "${pname}-${version}";
-
-    src = fetchPypi {
-      inherit pname version;
-      sha256 = "0kyvc9zdlxr5r96bng5rhm9a6sfqidrbvvkz64s76qs5267dli6c";
-    };
-
-    NOSE_EXCLUDE=concatStringsSep "," disabled_tests;
-
-    checkPhase = ''
-      nosetests -v --cover-min-percentage 1
-    '';
-
-    doCheck = false;
-
-    buildInputs = with self; [ coverage tornado mock nose psutil pysocks ];
-
-    meta = {
-      description = "A Python library for Dropbox's HTTP-based Core and Datastore APIs";
-      homepage = https://www.dropbox.com/developers/core/docs;
-      license = licenses.mit;
-    };
-  };
-
   urllib3 = let
     disabled_tests = [
       "test_headers" "test_headerdict" "test_can_validate_ip_san" "test_delayed_body_read_timeout"
@@ -9845,22 +9813,6 @@ in {
     };
   };
 
-  chardet-3-0-4 = buildPythonPackage rec {
-    name = "chardet-3.0.4";
-
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/c/chardet/${name}.tar.gz";
-      sha256 = "1bpalpia6r5x1kknbk11p1fzph56fmmnp405ds8icksd3knr5aw4";
-    };
-
-    meta = {
-      homepage = https://github.com/chardet/chardet;
-      description = "Universal encoding detector";
-      license = licenses.lgpl2;
-      maintainers = with maintainers; [ domenkozar ];
-    };
-  };
-
   chardet = buildPythonPackage rec {
     name = "chardet-2.3.0";
 
@@ -13201,7 +13153,7 @@ in {
 
     propagatedBuildInputs = [
       self.msgpack
-      self.requests-2-18-4
+      self.requests
       self.flask
       self.gevent
       self.pyzmq
@@ -20953,32 +20905,6 @@ in {
   requests2 = throw "requests2 has been deprecated. Use requests instead.";
 
   # use requests, not requests_2
-  requests-2-18-4 = buildPythonPackage rec {
-    name = "requests-${version}";
-    version = "2.18.4";
-
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/r/requests/${name}.tar.gz";
-      sha256 = "0zi3v9nsmv9j27d0c0m1dvqyvaxz53g8m0aa1h3qanxs4irkwi4w";
-    };
-
-    propagatedBuildInputs = [
-      self.idna
-      self.chardet-3-0-4
-      self.certifi
-      self.urllib3-1-22
-    ];
-    nativeBuildInputs = [ self.pytest ];
-    # sadly, tests require networking
-    doCheck = false;
-
-    meta = {
-      description = "An Apache2 licensed HTTP library, written in Python, for human beings";
-      homepage = http://docs.python-requests.org/en/latest/;
-      license = licenses.asl20;
-    };
-  };
-
   requests = buildPythonPackage rec {
     name = "requests-${version}";
     version = "2.13.0";
@@ -20988,12 +20914,6 @@ in {
       sha256 = "5722cd09762faa01276230270ff16af7acf7c5c45d623868d9ba116f15791ce8";
     };
 
-    propagatedBuildInputs = [
-      self.idna
-      self.chardet-3-0-4
-      self.certifi
-      self.urllib3-1-22
-    ];
     nativeBuildInputs = [ self.pytest ];
     # sadly, tests require networking
     doCheck = false;

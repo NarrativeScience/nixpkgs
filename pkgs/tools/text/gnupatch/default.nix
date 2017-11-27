@@ -7,7 +7,7 @@ stdenv.mkDerivation rec {
   name = "patch-2.7.5";
 
   src = fetchurl {
-    url = "http://ftp.gnu.org/gnu/patch/patch-2.7.5.tar.xz";
+    url = "https://ftp.gnu.org/gnu/patch/patch-2.7.5.tar.xz";
     sha256 = "16d2r9kpivaak948mxzc0bai45mqfw73m113wrkmbffnalv1b5gx";
   };
 

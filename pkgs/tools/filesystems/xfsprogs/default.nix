@@ -4,8 +4,7 @@ stdenv.mkDerivation rec {
   name = "xfsprogs-4.5.0";
 
   src = fetchurl {
-    urls = map (dir: "ftp://oss.sgi.com/projects/xfs/${dir}/${name}.tar.gz")
-      [ "cmd_tars" "previous" ];
+    url = "https://ftp.osuosl.org/pub/blfs/conglomeration/xfsprogs/${name}.tar.gz";
     sha256 = "1y49rwvbbvqdq2a1x7p5i05bcfyv6xhmrfwafl6vvvw494qyp6z4";
   };
 

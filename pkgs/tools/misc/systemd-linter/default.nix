@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, rustPlatform, rustRegistry, makeWrapper, nix }:
+{ stdenv, fetchurl, rustPlatform, makeWrapper, nix }:
 
 rustPlatform.buildRustPackage rec {
   name = "systemd-linter-${version}";
@@ -10,7 +10,6 @@ rustPlatform.buildRustPackage rec {
       url = https://github.com/mackwic/systemd-linter/archive/v0.1.4.tar.gz;
       sha256= "0vj10wh57jb4nl21l8v5mjnp5n19hsvpqcfkp16vlnh0ay2mfq2n";
     };
-    inherit rustRegistry;
     buildInputs = [rustPlatform.rust.cargo];
     buildCommand = ''
       tar xf $tarball
@@ -22,7 +21,7 @@ rustPlatform.buildRustPackage rec {
     '';
   };
 
-  depsSha256 = "1cq9ixiffhifzp26xb8jc9y6s7ylc6j29zkri848dhapb3wfg1fh";
+  cargoSha256 = "1cq9ixiffhifzp26xb8jc9y6s7ylc6j29zkri848dhapb3wfg1fh";
 
   meta = with stdenv.lib; {
     description = "Lint systemd files";

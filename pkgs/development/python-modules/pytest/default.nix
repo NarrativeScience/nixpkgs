@@ -8,6 +8,7 @@ buildPythonPackage rec {
     # don't test bash builtins
     rm testing/test_argcomplete.py
   '';
+  doCheck = false;
 
   src = fetchurl {
     url = "mirror://pypi/p/pytest/${name}.tar.gz";

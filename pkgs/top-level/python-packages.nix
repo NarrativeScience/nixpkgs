@@ -4325,8 +4325,8 @@ in {
     name = "${pname}${version}";
     version = "1.8.1";
 
-    src = fetchPypi {
-      inherit pname version;
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/42/16/1b987b60db55c21754155bdd51a6efc7d5be89b8a4e2ddcc76c730b3f55f/cryptography_vectors-1.8.1.tar.gz";
       sha256 = "2fd61facea08800ca98ac923f6d02f48a7ae6648025b29cdeb51987c1532add6";
     };
 

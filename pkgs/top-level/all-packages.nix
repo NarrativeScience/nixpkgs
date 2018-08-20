@@ -18500,7 +18500,7 @@ with pkgs;
 
   ghostscript = callPackage ../misc/ghostscript {
     x11Support = false;
-    cupsSupport = config.ghostscript.cups or (!stdenv.isDarwin);
+    cupsSupport = false;
   };
 
   ghostscriptX = appendToName "with-X" (ghostscript.override {

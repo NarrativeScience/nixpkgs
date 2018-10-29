@@ -1,7 +1,7 @@
 { stdenv, fetchurl, fetchpatch, pkgconfig, cmake, zlib, openssl, libsodium }:
 
 stdenv.mkDerivation rec {
-  name = "libssh-0.7.5";
+  name = "libssh-0.7.6";
 
   src = fetchurl {
     url = "https://red.libssh.org/attachments/download/218/${name}.tar.xz";

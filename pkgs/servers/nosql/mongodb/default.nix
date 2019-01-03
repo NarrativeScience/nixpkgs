@@ -57,7 +57,7 @@ in stdenv.mkDerivation rec {
       # We remove the build flags from buildInfo data.
       ./forget-build-dependencies.patch
       (fetchpatch {
-        url = https://projects.archlinux.org/svntogit/community.git/plain/trunk/boost160.patch?h=packages/mongodb;
+        url = https://packages.aosc.io/aosc-os-abbs/raw/extra-database/mongodb/autobuild/patches/boost160.patch?name=7bbfc70c4495330aa6197a9b68849559c47a94f18b613fb1735f584a25ea79f3;
         name = "boost160.patch";
         sha256 = "0bvsf3499zj55pzamwjmsssr6x63w434944w76273fr5rxwzcmh8";
       })

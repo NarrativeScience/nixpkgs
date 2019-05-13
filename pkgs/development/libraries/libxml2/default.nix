@@ -22,7 +22,7 @@ in stdenv.mkDerivation rec {
       # Contains fixes for CVE-2016-{4658,5131} and other bugs.
       name = "misc.patch";
       url = "https://git.gnome.org/browse/libxml2/patch/?id=e905f081&id2=v2.9.4";
-      sha256 = "14rnzilspmh92bcpwbd6kqikj36gx78al42ilgpqgl1609krb5m5";
+      sha256 = "0mdqa9w1p6cmli6976v4wi0sw9r4p5prkj7lzfd1877wk11c9c73";
     })
   ];
 

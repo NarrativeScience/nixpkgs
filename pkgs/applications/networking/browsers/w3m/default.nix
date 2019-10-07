@@ -18,9 +18,9 @@ stdenv.mkDerivation rec {
   name = "w3m-0.5.3-2015-12-20";
 
   src = fetchgit {
-    url = "git://anonscm.debian.org/collab-maint/w3m.git";
-    rev = "e0b6e022810271bd0efcd655006389ee3879e94d";
-    sha256 = "1vahm3719hb0m20nc8k88165z35f8b15qasa0whhk78r12bls1q6";
+    url = "https://github.com/tats/w3m.git";
+    rev = "6519207d0bec5bea633485ef02783ddaa7fe9ada";
+    sha256 = "06n5a9jdyihkd4xdjmyci32dpqp1k2l5awia5g9ng0bn256bacdc";
   };
 
   NIX_LDFLAGS = optionalString stdenv.isSunOS "-lsocket -lnsl";

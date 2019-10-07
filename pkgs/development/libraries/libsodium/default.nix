@@ -4,7 +4,7 @@ stdenv.mkDerivation rec {
   name = "libsodium-1.0.11";
 
   src = fetchurl {
-    url = "https://download.libsodium.org/libsodium/releases/${name}.tar.gz";
+    url = "https://download.libsodium.org/libsodium/releases/old/unsupported/${name}.tar.gz";
     sha256 = "0rf7z6bgpnf8lyz8sph4h43fbb28pmj4dgybf0hsxxj97kdljid1";
   };
 

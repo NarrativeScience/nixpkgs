@@ -7,7 +7,7 @@ stdenv.mkDerivation (rec {
   src = fetchurl {
     name = "${name}.tar.gz";
     url = "https://github.com/libgit2/libgit2/tarball/v${version}";
-    sha256 = "0avijw83vfx64cn23vx2j1h14zmkx8silgjnq6q2qw2z3sh73hs1";
+    sha256 = "1gddyjvgls7vv7m9wipir2b8znqqphivxhw3s4zb680d9qwqci1s";
   };
 
   # TODO: `cargo` (rust's package manager) surfaced a serious bug in
